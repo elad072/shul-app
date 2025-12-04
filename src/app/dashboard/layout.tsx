@@ -11,7 +11,7 @@ export default function DashboardLayout({
     // rtl הופך את הכיוון לעברית
     <div className="flex min-h-screen bg-gray-50 rtl">
       {/* תפריט הצד - קבוע */}
-      <aside className="w-64 flex-shrink-0 bg-white shadow-md z-10">
+      <aside className="w-64 shrink-0 bg-white shadow-md z-10">
         <Sidebar />
       </aside>
 
