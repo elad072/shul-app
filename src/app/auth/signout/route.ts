@@ -19,27 +19,29 @@ export async function POST(req: NextRequest) {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // התעלמות משגיאות
+            // התעלמות
           }
         },
       },
     }
   );
 
-  // התנתקות
   await supabase.auth.signOut();
 
-  // --- התיקון הסופי ("השיטה הבטוחה") ---
-  // במקום לנחש פורטים, אנחנו לוקחים את הכתובת המקורית מה-Headers
-  // זה עובד מושלם גם ב-Codespaces, גם ב-Vercel וגם ב-Localhost
+  // --- הפתרון הבטוח ביותר (The Origin Fix) ---
 
-  const host = req.headers.get("host"); // לדוגמה: potential-couscous...-3000.app.github.dev
-  const protocol = req.headers.get("x-forwarded-proto") || "https";
+  // 1. ננסה לקחת את הכתובת המדויקת שהדפדפן דיווח עליה (Origin)
+  const origin = req.headers.get("origin") || req.headers.get("referer");
 
-  // בנייה פשוטה וישירה של הכתובת
-  const loginUrl = `${protocol}://${host}/login`;
+  // 2. אם מצאנו (וזה כמעט תמיד קיים ב-POST), נשתמש בזה
+  if (origin) {
+    // origin ב-Codespaces נראה בדיוק כמו שצריך: https://...-3000.app.github.dev
+    // אנחנו רק מוסיפים לו את הנתיב /login
+    // זהירות: לפעמים referer מגיע עם נתיב מלא, אז אנחנו לוקחים רק את הבסיס
+    const baseUrl = new URL(origin).origin;
+    return NextResponse.redirect(`${baseUrl}/login`, { status: 302 });
+  }
 
-  return NextResponse.redirect(loginUrl, {
-    status: 302,
-  });
+  // 3. גיבוי למקרה חירום (Fallback)
+  return NextResponse.redirect(new URL("/login", req.url), { status: 302 });
 }
