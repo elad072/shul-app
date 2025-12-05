@@ -59,8 +59,22 @@ export default function ApplicationPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || "שגיאת שרת");
+        // try to parse helpful message from server
+        let message = "שגיאת שרת";
+        try {
+          const data = await res.json();
+          message =
+            data?.error || data?.message || JSON.stringify(data) || message;
+        } catch (_) {
+          try {
+            const text = await res.text();
+            if (text) message = text;
+          } catch (_) {
+            // keep default
+          }
+        }
+        setError(message);
+        return;
       }
 
       // on success redirect to waiting-room (user will see confirmation)
