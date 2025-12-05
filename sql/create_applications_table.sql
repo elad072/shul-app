@@ -20,3 +20,7 @@ create table if not exists public.applications (
 
 -- optional index for status
 create index if not exists applications_status_idx on public.applications (status);
+
+-- Add applicant_auth_id column if not exists (used to tie application to Supabase auth user)
+alter table public.applications add column if not exists applicant_auth_id uuid;
+
