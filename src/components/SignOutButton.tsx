@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 export default function SignOutButton() {
   const [loading, setLoading] = useState(false);
@@ -10,10 +11,24 @@ export default function SignOutButton() {
     setError(null);
     setLoading(true);
     try {
+      // 1. clear Supabase client-side session first
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      await supabase.auth.signOut();
+
+      // 2. then call server to clear cookies
       const res = await fetch("/auth/signout", {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
       });
+
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
+      }
+
       if (res.redirected && res.url) {
         window.location.href = res.url;
         return;
@@ -30,12 +45,15 @@ export default function SignOutButton() {
         // ignore
       }
 
-      // fallback
+      // fallback: navigate to login
       window.location.href = "/login";
     } catch (err: any) {
-      console.error(err);
+      console.error("SignOut error:", err);
+      // on error, show message and auto-redirect after delay
       setError(err?.message || "שגיאה בעת התנתקות");
-      setLoading(false);
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1500);
     }
   };
 

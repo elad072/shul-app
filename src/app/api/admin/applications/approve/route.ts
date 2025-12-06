@@ -94,7 +94,7 @@ export async function POST(request: Request) {
     // 4. update application status
     const { error: appUpdateErr } = await supabase
       .from("applications")
-      .update({ status: "approved" })
+      .update({ status: "active" })
       .eq("id", applicationId);
 
     if (appUpdateErr) {
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     // 5. update profile if exists (match by email)
     const { error: profileErr } = await supabase
       .from("profiles")
-      .update({ status: "approved", member_id: memberId })
+      .update({ status: "active", member_id: memberId })
       .eq("email", app.applicant_email);
 
     if (profileErr) {

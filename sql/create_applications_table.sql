@@ -24,3 +24,18 @@ create index if not exists applications_status_idx on public.applications (statu
 -- Add applicant_auth_id column if not exists (used to tie application to Supabase auth user)
 alter table public.applications add column if not exists applicant_auth_id uuid;
 
+-- Create a `profiles` table used for user onboarding and roles
+create table if not exists public.profiles (
+  id uuid primary key default gen_random_uuid(),
+  email text unique,
+  first_name text,
+  last_name text,
+  phone text,
+  status text default 'pending',
+  role text default 'member',
+  is_gabbai boolean default false,
+  created_at timestamptz default now()
+);
+
+create index if not exists profiles_status_idx on public.profiles (status);
+

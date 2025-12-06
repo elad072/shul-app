@@ -30,7 +30,7 @@ export default async function WaitingRoomPage() {
       .eq("id", user.id)
       .single();
 
-    if (profile?.status === "approved") {
+    if (profile?.status === "active") {
       redirect("/dashboard");
     }
   } else {
