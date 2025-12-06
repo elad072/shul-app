@@ -1,22 +1,23 @@
-import Sidebar from "../../components/Sidebar";
+import { createClient } from "@/utils/supabase/server";
+import DashboardShell from "./DashboardShell";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    // min-h-screen מבטיח שהדף יתפוס את כל הגובה
-    // bg-gray-100 נותן רקע אפור בהיר ונעים לתוכן
-    // rtl הופך את הכיוון לעברית
-    <div className="flex min-h-screen bg-gray-50 rtl">
-      {/* תפריט הצד - קבוע */}
-      <aside className="w-64 shrink-0 bg-white shadow-md z-10">
-        <Sidebar />
-      </aside>
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-      {/* אזור התוכן הראשי - נגלל */}
-      <main className="flex-1 p-8 overflow-y-auto h-screen">{children}</main>
-    </div>
-  );
+  let profile = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("is_gabbai")
+      .eq("id", user.id)
+      .single();
+    profile = data;
+  }
+
+  return <DashboardShell profile={profile}>{children}</DashboardShell>;
 }
