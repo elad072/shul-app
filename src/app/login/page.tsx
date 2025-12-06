@@ -12,19 +12,23 @@ export default function LoginPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const handleLogin = async () => {
+const handleLogin = async () => {
     setLoading(true);
+    
+    // שליפת הכתובת הנוכחית בצורה דינמית
+    const origin = window.location.origin;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        // מפנה לנתיב שיטפל ביצירת הסשן
-        redirectTo: `${window.location.origin}/auth/callback`,
+        // מפנה לנתיב שיטפל ביצירת הסשן - שים לב לשימוש ב-origin
+        redirectTo: `${origin}/auth/callback`,
       },
     });
 
-    // שים לב: אנחנו לא עושים setLoading(false) כי המשתמש עובר לגוגל
     if (error) {
       console.error("Error signing in:", error);
+      alert("שגיאת התחברות: " + error.message); // הוספנו התראה כדי שתראה אם יש שגיאה
       setLoading(false);
     }
   };
