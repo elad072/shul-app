@@ -2,17 +2,21 @@
 
 import Link from "next/link";
 
+interface DashboardCardProps {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+  href: string;
+  color?: string; // אפשרות למיתוג הכרטיס
+}
+
 export default function DashboardCard({
   icon,
   title,
   text,
   href,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-  href: string;
-}) {
+  color = "indigo",
+}: DashboardCardProps) {
   return (
     <Link
       href={href}
@@ -21,15 +25,14 @@ export default function DashboardCard({
         transition-all duration-200
         hover:shadow-lg hover:border-indigo-300 hover:-translate-y-1
       "
-      dir="rtl"
     >
       <div className="flex items-center gap-4">
         {/* Icon Container */}
         <div
-          className="
+          className={`
             w-12 h-12 flex items-center justify-center rounded-xl 
-            bg-indigo-50 text-indigo-600 text-xl shadow-inner
-          "
+            bg-${color}-50 text-${color}-600 text-xl shadow-inner
+          `}
         >
           {icon}
         </div>

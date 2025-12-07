@@ -13,11 +13,11 @@ export async function createServerClientInstance() {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set() {
-          // לא נדרש ב־SSR
+        set(name: string, value: string, options: any) {
+          cookieStore.set(name, value, options);
         },
-        remove() {
-          // לא נדרש ב־SSR
+        remove(name: string, options: any) {
+          cookieStore.set(name, "", { ...options, maxAge: 0 });
         },
       },
     }

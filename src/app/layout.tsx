@@ -1,22 +1,13 @@
 import type { ReactNode } from "react";
-import { createServerClientInstance } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import "./globals.css";
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const supabase = await createServerClientInstance();
+export const metadata = {
+  title: "Shul App",
+  description: "Community management platform",
+  direction: "rtl",
+};
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="he" dir="rtl">
       <body>{children}</body>
