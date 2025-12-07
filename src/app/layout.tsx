@@ -1,20 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Synagogue CRM",
-  description: "מערכת ניהול לבית הכנסת",
+  title: "Shul CRM",
+  description: "Synagogue Management System",
 };
 
 export default function RootLayout({
@@ -24,10 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he" dir="rtl">
-      <body
-        suppressHydrationWarning={true}
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 min-h-screen`}
-      >
+      <body className={inter.className} suppressHydrationWarning={true}>
         {children}
       </body>
     </html>

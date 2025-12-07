@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shul-App - תיעוד הפרויקט</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #1e40af;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        
+        h2 {
+            color: #1e40af;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 4px solid #1e40af;
+            font-size: 1.8em;
+        }
+        
+        h3 {
+            color: #2563eb;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        
+        th {
+            background-color: #1e40af;
+            color: white;
+            padding: 12px;
+            text-align: right;
+            border: 1px solid #ddd;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: right;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        tr:hover {
+            background-color: #eff6ff;
+        }
+        
+        .section-subtitle {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .tech-stack {
+            background-color: #f0f4ff;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+        }
+        
+        .tech-item {
+            margin: 10px 0;
+            padding: 8px;
+        }
+        
+        .tech-item strong {
+            color: #1e40af;
+        }
+        
+        .flow-diagram {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #1e40af;
+            font-family: monospace;
+            margin: 20px 0;
+            line-height: 2;
+            white-space: pre;
+        }
+        
+        .date {
+            color: #888;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+        
+        code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .highlight {
+            background-color: #fef3c7;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            table {
+                page-break-inside: avoid;
+            }
+            h2 {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Shul-App</h1>
+        <h2 style="text-align: center; border: none; border-bottom: 2px solid #1e40af;">מערכת ניהול בית הכנסת</h2>
+        
+        <p class="section-subtitle" style="text-align: center;">סיכום מקיף של עץ הפרויקט ותיאור כל קובץ</p>
+
+        <!-- קבצי הגדרה -->
+        <h2><span class="emoji">⚙️</span>קבצי הגדרה בשורש</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>קובץ</th>
+                    <th>תיאור</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>package.json</code></td>
+                    <td>מנהל התלויות (Dependencies) - Next.js, React 19, Supabase, Tailwind CSS, lucide-react</td>
+                </tr>
+                <tr>
+                    <td><code>tsconfig.json</code></td>
+                    <td>הגדרות TypeScript - עם path alias <code>@/*</code></td>
+                </tr>
+                <tr>
+                    <td><code>next.config.ts</code></td>
+                    <td>הגדרות Next.js - Server Actions מופעלים</td>
+                </tr>
+                <tr>
+                    <td><code>eslint.config.mjs</code></td>
+                    <td>כללי ESLint לבדיקת קוד</td>
+                </tr>
+                <tr>
+                    <td><code>postcss.config.mjs</code></td>
+                    <td>הגדרות PostCSS עבור Tailwind CSS</td>
+                </tr>
+                <tr>
+                    <td><code>middleware.ts</code></td>
+                    <td>ביניהו מוביל לאימות משתמשים דרך Supabase</td>
+                </tr>
+                <tr>
+                    <td><code>README.md</code></td>
+                    <td>תיעוד הפרויקט</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- תיקיית src -->
+        <h2><span class="emoji">📁</span>תיקיית src/</h2>
+
+        <!-- app -->
+        <h3><span class="emoji">🎨</span>app/ - אפליקציית Next.js (App Router)</h3>
+        <p class="section-subtitle">כאן נמצאות כל עמודות היישום והנתיבים</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>קובץ / תיקייה</th>
+                    <th>תיאור</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>layout.tsx</code></td>
+                    <td>Layout ראשי - מגדיר HTML עם RTL, מטא-דאטא, וגופנים Google</td>
+                </tr>
+                <tr>
+                    <td><code>page.tsx</code></td>
+                    <td>דף הבית - כפתור התחברות דרך Google OAuth</td>
+                </tr>
+                <tr>
+                    <td><code>globals.css</code></td>
+                    <td>סטיילים גלובליים לכל האפליקציה</td>
+                </tr>
+                <tr>
+                    <td><code>auth/callback/route.ts</code></td>
+                    <td>API route - מטפל בחוזר מ-Google OAuth ויוצר סשן</td>
+                </tr>
+                <tr>
+                    <td><code>auth/signout/route.ts</code></td>
+                    <td>API route - מטפל בהתנתקות משתמש</td>
+                </tr>
+                <tr>
+                    <td><code>login/page.tsx</code></td>
+                    <td>דף התחברות - ממשק התחברות משופר</td>
+                </tr>
+                <tr>
+                    <td><code>dashboard/layout.tsx</code></td>
+                    <td>Layout דשבורד עם Sidebar וניווט</td>
+                </tr>
+                <tr>
+                    <td><code>dashboard/page.tsx</code></td>
+                    <td>דף הדשבורד הראשי</td>
+                </tr>
+                <tr>
+                    <td><code>dashboard/admin/users/page.tsx</code></td>
+                    <td>ניהול משתמשים - גם טבלה וגם קומפוננטות פעולות</td>
+                </tr>
+                <tr>
+                    <td><code>dashboard/admin/users/actions.ts</code></td>
+                    <td>Server Actions - פעולות אדמין על משתמשים (אישור וכו')</td>
+                </tr>
+                <tr>
+                    <td><code>dashboard/admin/users/ApproveButton.tsx</code></td>
+                    <td>כפתור אישור משתמשים</td>
+                </tr>
+                <tr>
+                    <td><code>dashboard/members/page.tsx</code></td>
+                    <td>ניהול חברי בית הכנסת</td>
+                </tr>
+                <tr>
+                    <td><code>dashboard/members/members-table.tsx</code></td>
+                    <td>טבלה להצגת חברים</td>
+                </tr>
+                <tr>
+                    <td><code>dashboard/members/actions.ts</code></td>
+                    <td>Server Actions - פעולות על חברים (עדכון, מחיקה וכו')</td>
+                </tr>
+                <tr>
+                    <td><code>onboarding/page.tsx</code></td>
+                    <td>דף Onboarding - תהליך הרשמה ופרטים ראשוניים</td>
+                </tr>
+                <tr>
+                    <td><code>onboarding/actions.ts</code></td>
+                    <td>Server Actions - שמירת נתוני Onboarding</td>
+                </tr>
+                <tr>
+                    <td><code>waiting-room/page.tsx</code></td>
+                    <td>חדר המתנה - הצגת בקשות חדשות בהמתנה לאישור</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- components -->
+        <h3><span class="emoji">⚛️</span>components/ - קומפוננטות React</h3>
+        <p class="section-subtitle">קומפוננטות בעלות שימוש חוזר ברחבי האפליקציה</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>קובץ</th>
+                    <th>תיאור</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>DashboardShell.tsx</code></td>
+                    <td>מעטפת הדשבורד - סיידבר + תוכן דינמי (ממשיק נייד/דסקטופ)</td>
+                </tr>
+                <tr>
+                    <td><code>Sidebar.tsx</code></td>
+                    <td>תפריט הניווט - קישורים לדשבורד, חברים, בקשות וכו'</td>
+                </tr>
+                <tr>
+                    <td><code>ProfileForm.tsx</code></td>
+                    <td>טופס עדכון פרופיל משתמש</td>
+                </tr>
+                <tr>
+                    <td><code>SignOutButton.tsx</code></td>
+                    <td>כפתור התנתקות מהמערכת</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- lib -->
+        <h3><span class="emoji">📚</span>lib/ - כלים ובסיסי נתונים</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>קובץ</th>
+                    <th>תיאור</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>supabase.ts</code></td>
+                    <td>יצירת Supabase client עבור ה-Browser (Client-Side)</td>
+                </tr>
+                <tr>
+                    <td><code>database.types.ts</code></td>
+                    <td>סוגי TypeScript שנוצרו אוטומטית מ-Supabase (Schema)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- types -->
+        <h3><span class="emoji">🎯</span>types/ - הגדרות סוגים מותאמים</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>קובץ</th>
+                    <th>תיאור</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>custom.ts</code></td>
+                    <td><code>MemberWithFamily</code> - ממשק לחבר עם פרטי משפחה מ-JOIN</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- utils -->
+        <h3><span class="emoji">🛠️</span>utils/ - פונקציות עזר</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>קובץ</th>
+                    <th>תיאור</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>supabase/server.ts</code></td>
+                    <td>יצירת Supabase client עבור Server-Side (Server Actions)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SQL -->
+        <h2><span class="emoji">🗄️</span>תיקיית sql/</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>קובץ</th>
+                    <th>תיאור</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>create_applications_table.sql</code></td>
+                    <td>SQL script ליצירת טבלאות בסיס הנתונים: <code>applications</code>, <code>profiles</code> ואינדקסים</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Public -->
+        <h2><span class="emoji">📁</span>תיקיית public/</h2>
+        <p>קבצים סטטיים - תמונות, אייקונים ויצירים אחרים שלא משתנים</p>
+
+        <!-- זרימת היישום -->
+        <h2><span class="emoji">🏗️</span>זרימת היישום</h2>
+        
+        <div class="flow-diagram">👤 משתמש
+    ↓
+🔐 דף התחברות → Google OAuth
+    ↓
+✅ Callback Handler → יצירת סשן
+    ↓
+📊 דשבורד → DashboardShell + Sidebar
+    ↓
+📋 ניהול חברים / משתמשים / בקשות
+        </div>
+
+        <!-- טכנולוגיות עיקריות -->
+        <h2><span class="emoji">🛠️</span>טכנולוגיות עיקריות</h2>
+        
+        <div class="tech-stack">
+            <div class="tech-item"><strong>Framework:</strong> Next.js 16</div>
+            <div class="tech-item"><strong>JavaScript Framework:</strong> React 19</div>
+            <div class="tech-item"><strong>Language:</strong> TypeScript 5</div>
+            <div class="tech-item"><strong>Backend & Auth:</strong> Supabase</div>
+            <div class="tech-item"><strong>Styling:</strong> Tailwind CSS 4 + PostCSS</div>
+            <div class="tech-item"><strong>Icons:</strong> Lucide React</div>
+            <div class="tech-item"><strong>Date Utilities:</strong> date-fns</div>
+            <div class="tech-item"><strong>Code Quality:</strong> ESLint 9</div>
+        </div>
+
+        <!-- פיצ'רים עיקריים -->
+        <h2><span class="emoji">✨</span>פיצ'רים עיקריים</h2>
+        
+        <h3>אימות והרשמה</h3>
+        <ul style="margin-right: 20px; margin-bottom: 15px;">
+            <li>התחברות דרך Google OAuth</li>
+            <li>Onboarding משופר לחברים חדשים</li>
+            <li>ניהול סשנים דרך Supabase</li>
+        </ul>
+
+        <h3>ניהול חברים</h3>
+        <ul style="margin-right: 20px; margin-bottom: 15px;">
+            <li>טבלת חברים עם חיפוש וסינון</li>
+            <li>ניהול משפחות וקשרים</li>
+            <li>עדכון פרטי חברים</li>
+        </ul>
+
+        <h3>ניהול אדמיניסטרציה</h3>
+        <ul style="margin-right: 20px; margin-bottom: 15px;">
+            <li>ניהול משתמשים ואישור בקשות</li>
+            <li>חדר המתנה - בקשות בהמתנה לאישור</li>
+            <li>תפקידים שונים (Admin, Member)</li>
+        </ul>
+
+        <h3>ממשיק משתמש</h3>
+        <ul style="margin-right: 20px;">
+            <li>RTL (Right-to-Left) עברית</li>
+            <li>ממשיק נייד ודסקטופ (Responsive)</li>
+            <li>Sidebar ניווט מתקדם</li>
+        </ul>
+
+        <div class="date">
+            <p><strong>תאריך יצירה:</strong> דצמבר 2025</p>
+            <p><strong>מסקנה:</strong> זו אפליקציית ניהול מקיפה לבית כנסת עם פיצ'רים מתקדמים לאימות, ניהול חברים וממשק ניהול אדמיניסטרציה.</p>
+        </div>
+    </div>
+</body>
+</html>

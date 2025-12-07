@@ -1,52 +1,118 @@
-export default function DashboardPage() {
-  return (
-    <div dir="rtl" className="space-y-8">
+import { createClient } from "@/utils/supabase/server";
+import { Users, Search } from "lucide-react";
 
-      {/* Header */}
-      <header>
-        <h1 className="text-2xl font-bold text-gray-900">ברוך הבא</h1>
-        <p className="text-sm text-gray-500">
-          ברוכים הבאים למערכת ניהול בית הכנסת
-        </p>
+export default async function DashboardPage() {
+  const supabase = createClient();
+
+  // שליפת משתמשים מהדאטה-בייס
+  const { data: users } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  return (
+    <div className="space-y-10">
+
+      {/* כותרת + סיכום */}
+      <header className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Users className="text-indigo-600" />
+            ניהול משתמשים
+          </h1>
+          <p className="text-gray-500 mt-1">
+            צפייה ועריכה של כל המשתמשים במערכת
+          </p>
+        </div>
+
+        <div className="bg-indigo-600 text-white px-5 py-2 rounded-xl shadow-md text-sm font-semibold">
+          סה״כ משתמשים: {users?.length || 0}
+        </div>
       </header>
 
-      {/* Stats Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* תיבת חיפוש (בעתיד: פילטרים) */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+        <input
+          type="text"
+          placeholder="חיפוש משתמש..."
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
 
-        <div className="card flex flex-col gap-2">
-          <span className="text-gray-500 text-sm">סה"כ חברים</span>
-          <span className="text-3xl font-bold text-gray-900">0</span>
-        </div>
+      {/* טבלה */}
+      <div className="bg-white shadow-card-lg border border-gray-200 rounded-xl overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                שם מלא
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                אימייל
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                טלפון
+              </th>
+              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                סטטוס
+              </th>
+            </tr>
+          </thead>
 
-        <div className="card flex flex-col gap-2">
-          <span className="text-gray-500 text-sm">בתי אב</span>
-          <span className="text-3xl font-bold text-gray-900">0</span>
-        </div>
+          <tbody className="bg-white divide-y divide-gray-100">
+            {users?.map((user) => (
+              <tr
+                key={user.id}
+                className="hover:bg-gray-50 transition-colors"
+              >
+                {/* שם */}
+                <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                  {user.first_name} {user.last_name}
+                </td>
 
-        <div className="card flex flex-col gap-2">
-          <span className="text-gray-500 text-sm">אירועים קרובים</span>
-          <span className="text-3xl font-bold text-gray-900">0</span>
-        </div>
-      </section>
+                {/* אימייל */}
+                <td className="px-6 py-4 text-sm text-gray-600">
+                  {user.email}
+                </td>
 
-      {/* Notifications */}
-      <section className="card">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900">הודעות</h2>
-        <p className="text-gray-500 text-sm">אין הודעות כרגע</p>
-      </section>
+                {/* טלפון */}
+                <td className="px-6 py-4 text-sm text-gray-600">
+                  {user.phone || "-"}
+                </td>
 
-      {/* Quick actions */}
-      <section>
-        <h2 className="text-lg font-semibold mb-3 text-gray-900">פעולות מהירות</h2>
+                {/* סטטוס */}
+                <td className="px-6 py-4 text-sm text-center">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      user.status === "approved"
+                        ? "bg-green-100 text-green-700"
+                        : user.status === "pending"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {user.status === "approved"
+                      ? "מאושר"
+                      : user.status === "pending"
+                      ? "ממתין"
+                      : user.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
 
-        <div className="card flex items-center justify-between">
-          <span className="text-gray-700 font-medium">הוספת חבר חדש</span>
-          <a href="/dashboard/members/add" className="btn btn-sm">
-            +
-          </a>
-        </div>
-      </section>
-
+            {/* מצב ריק */}
+            {(!users || users.length === 0) && (
+              <tr>
+                <td colSpan={4} className="py-10 text-center text-gray-500">
+                  אין משתמשים במערכת.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

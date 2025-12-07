@@ -1,5 +1,7 @@
+import DashboardShell from "@/components/DashboardShell";
+import Sidebar from "@/components/Sidebar";
 import { createClient } from "@/utils/supabase/server";
-import DashboardShell from "./DashboardShell";
+import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
   children,
@@ -7,17 +9,15 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
 
-  let profile = null;
-  if (user) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("is_gabbai")
-      .eq("id", user.id)
-      .single();
-    profile = data;
+  if (error || !user) {
+    redirect("/login");
   }
 
-  return <DashboardShell profile={profile}>{children}</DashboardShell>;
+  return (
+    <DashboardShell sidebar={<Sidebar />}>
+      {children}
+    </DashboardShell>
+  );
 }

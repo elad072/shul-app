@@ -1,45 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Home, Users, ShieldCheck, UserPlus } from "lucide-react";
+import { Home, Users, UserPlus, LogOut } from "lucide-react";
 
-export default function Sidebar({ profile }: { profile?: any }) {
-  const pathname = usePathname();
-
-  const active = (path: string) =>
-    pathname.startsWith(path)
-      ? "bg-blue-50 text-blue-700"
-      : "text-gray-700 hover:bg-gray-100";
-
+export default function Sidebar() {
   return (
-    <div className="flex flex-col w-full py-6 px-4">
-
+    <aside className="w-64 h-full bg-white border-l border-gray-200 shadow-sm flex flex-col p-4">
+      
       {/* Logo */}
-      <div className="text-xl font-bold text-blue-700 mb-6">
-        Synagogue CRM
-      </div>
+      <h1 className="text-2xl font-extrabold text-indigo-600 mb-8 px-2">
+        Shul CRM
+      </h1>
 
-      {/* Links */}
-      <Link href="/dashboard" className={`flex items-center gap-3 px-4 py-2 rounded-lg ${active("/dashboard")}`}>
-        <Home size={18} /> לוח בקרה
-      </Link>
-
-      <Link href="/dashboard/members" className={`flex items-center gap-3 px-4 py-2 rounded-lg ${active("/dashboard/members")}`}>
-        <Users size={18} /> רשימת חברים
-      </Link>
-
-      {profile?.is_gabbai && (
-        <Link href="/dashboard/admin/users" className={`flex items-center gap-3 px-4 py-2 rounded-lg ${active("/dashboard/admin")}`}>
-          <ShieldCheck size={18} /> ניהול משתמשים
+      {/* Navigation */}
+      <nav className="space-y-3 flex-1 text-right">
+        <Link href="/dashboard" className="sidebar-link flex items-center justify-end gap-2">
+          לוח בקרה
+          <Home size={18} />
         </Link>
-      )}
 
-      <Link href="/dashboard/members/add" className={`flex items-center gap-3 px-4 py-2 rounded-lg ${active("/dashboard/members/add")}`}>
-        <UserPlus size={18} /> הוספת חבר חדש
+        <Link href="/dashboard/members" className="sidebar-link flex items-center justify-end gap-2">
+          ניהול משתמשים
+          <Users size={18} />
+        </Link>
+
+        <Link href="/dashboard/add-member" className="sidebar-link flex items-center justify-end gap-2">
+          הוספת חבר חדש
+          <UserPlus size={18} />
+        </Link>
+      </nav>
+
+      {/* Logout */}
+      <Link
+        href="/auth/signout"
+        className="flex items-center justify-end gap-2 text-red-600 hover:text-red-700 font-medium mt-4"
+      >
+        התנתקות
+        <LogOut size={18} />
       </Link>
-
-      <div className="flex-1" />
-    </div>
+    </aside>
   );
 }
