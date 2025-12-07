@@ -1,24 +1,25 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
+import type { ReactNode } from "react";
+import { createServerClientInstance } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Shul CRM",
-  description: "Synagogue Management System",
-};
-
-export default function RootLayout({
+export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
+  const supabase = await createServerClientInstance();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
     <html lang="he" dir="rtl">
-      <body className={inter.className} suppressHydrationWarning={true}>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

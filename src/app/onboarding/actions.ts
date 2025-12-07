@@ -1,51 +1,47 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { createServerClientInstance } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
-export async function updateProfile(formData: FormData) {
-  console.log("--- התחלת עדכון פרופיל ---"); // לוג לבדיקה בטרמינל
+type UpdateResult =
+  | { success: true }
+  | { success: false; message: string };
 
-  const supabase = createClient();
+export async function updateProfile(formData: FormData): Promise<UpdateResult> {
+  const supabase = await createServerClientInstance();
 
-  // 1. קבלת המשתמש
   const {
     data: { user },
-    error: authError,
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (authError || !user) {
-    console.error("Auth Error:", authError);
-    return { success: false, message: "שגיאת אימות משתמש" };
+  if (userError || !user) {
+    return { success: false, message: "לא נמצאה גישה למשתמש. התחבר מחדש." };
   }
 
-  // 2. איסוף נתונים
-  const first_name = formData.get("first_name") as string;
-  const last_name = formData.get("last_name") as string;
-  const phone = formData.get("phone") as string;
+  const first_name = formData.get("first_name") as string | null;
+  const last_name = formData.get("last_name") as string | null;
+  const phone = formData.get("phone") as string | null;
 
-  // 3. שימוש ב-UPSERT במקום UPDATE
-  // זה מבטיח שהשמירה תעבוד גם אם הפרופיל לא נוצר אוטומטית בהרשמה
-  const { error } = await supabase
+  if (!first_name || !last_name || !phone) {
+    return { success: false, message: "יש למלא את כל שדות החובה." };
+  }
+
+  const { error: updateError } = await supabase
     .from("profiles")
-    .upsert({
-      id: user.id, // חובה ב-upsert
-      first_name,
-      last_name,
-      phone,
-      status: "pending",
-      email: user.email, // שומרים גם אימייל ליתר ביטחון
-      role: "member", // ערך ברירת מחדל
-    })
-    .select(); // מוודא שהפעולה באמת בוצעה
+    .update({ first_name, last_name, phone })
+    .eq("id", user.id);
 
-  if (error) {
-    console.error("Supabase Error:", error); // זה יופיע בטרמינל שלך ב-VS Code
-    return { success: false, message: "שגיאת DB: " + error.message };
+  if (updateError) {
+    return {
+      success: false,
+      message: "שגיאה בשמירת הנתונים. נסה שוב מאוחר יותר.",
+    };
   }
 
-  console.log("--- עדכון הצליח, מבצע הפניה ---");
+  // במקרה הצלחה → מעבר לדשבורד
+  redirect("/dashboard");
 
-  // 4. הפניה (חייבת להיות מחוץ ל-try/catch אם היה)
-  redirect("/waiting-room");
+  // לא יגיע לכאן, אבל TypeScript דורש return
+  return { success: true };
 }

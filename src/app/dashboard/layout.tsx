@@ -1,6 +1,6 @@
 import DashboardShell from "@/components/DashboardShell";
 import Sidebar from "@/components/Sidebar";
-import { createClient } from "@/utils/supabase/server";
+import { createServerClientInstance } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
@@ -8,16 +8,13 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const supabase = await createServerClientInstance();
 
-  if (error || !user) {
-    redirect("/login");
-  }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return (
-    <DashboardShell sidebar={<Sidebar />}>
-      {children}
-    </DashboardShell>
-  );
+  if (!user) redirect("/login");
+
+  return <DashboardShell sidebar={<Sidebar />}>{children}</DashboardShell>;
 }

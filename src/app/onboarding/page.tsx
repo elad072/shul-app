@@ -7,6 +7,7 @@ import { User, Phone, Loader2 } from "lucide-react";
 export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -15,20 +16,28 @@ export default function OnboardingPage() {
     const formData = new FormData(e.currentTarget);
     const result = await updateProfile(formData);
 
-    if (result && !result.success) {
+    // אם יש תוצאה והיא אובייקט מסוג שגיאה
+    if (result && "success" in result && !result.success) {
       setErrorMsg(result.message);
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6" dir="rtl">
+    <div
+      className="min-h-screen flex items-center justify-center bg-gray-50 p-6"
+      dir="rtl"
+    >
       <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-lg p-8">
 
         {/* כותרת */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900">השלמת פרטים</h1>
-          <p className="text-gray-500 mt-2">כמעט סיימנו — רק פרטים אחרונים</p>
+          <h1 className="text-3xl font-extrabold text-gray-900">
+            השלמת פרטים
+          </h1>
+          <p className="text-gray-500 mt-2">
+            כמעט שם — כמה פרטים אחרונים כדי להתחיל
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -42,7 +51,8 @@ export default function OnboardingPage() {
               <input
                 name="first_name"
                 required
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900"
+                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg
+                focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900"
                 placeholder="ישראל"
               />
               <User className="absolute right-3 top-2.5 text-gray-400" size={18} />
@@ -57,7 +67,8 @@ export default function OnboardingPage() {
             <input
               name="last_name"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg
+              focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900"
               placeholder="ישראלי"
             />
           </div>
@@ -72,7 +83,8 @@ export default function OnboardingPage() {
                 name="phone"
                 required
                 dir="ltr"
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900"
+                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg
+                focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900"
                 placeholder="050-0000000"
               />
               <Phone className="absolute right-3 top-2.5 text-gray-400" size={18} />
@@ -90,7 +102,8 @@ export default function OnboardingPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium text-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium text-lg 
+            hover:bg-indigo-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading && <Loader2 className="animate-spin" size={20} />}
             {loading ? "שומר..." : "שמירה והמשך"}
