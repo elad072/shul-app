@@ -1,54 +1,77 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* ------- ROOT THEME ------- */
-@layer base {
-  :root {
-    --bg: 248 250 252;
-    --surface: 255 255 255;
-    --surface-secondary: 245 247 250;
-    --foreground: 15 23 42;
-    --muted: 100 116 139;
-    --border: 226 232 240;
-
-    --primary: 79 70 229;
-    --primary-light: 129 140 248;
-
-    --radius: 0.75rem;
-    --radius-lg: 1rem;
-
-    --card-shadow: 0 1px 2px rgba(0,0,0,.06);
-    --card-shadow-lg: 0 10px 25px rgba(0,0,0,.1);
-  }
-
-  body {
-    background: rgb(var(--bg));
-    color: rgb(var(--foreground));
-  }
+/* Reset */
+html, body {
+  margin: 0;
+  padding: 0;
+  direction: rtl;
+  font-family: "Assistant", sans-serif;
+  background: #f3f4f6;
+  color: #333;
 }
 
-/* ------- COMPONENTS ------- */
-@layer components {
+/* Layout container */
+main {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* Card styling */
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  margin-top: 30px;
+}
+
+/* Titles */
+h1 {
+  font-size: 1.9rem;
+  text-align: center;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+
+h2 {
+  font-size: 1.3rem;
+  text-align: center;
+  color: #475569;
+  margin-bottom: 20px;
+}
+
+/* Text */
+p {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 12px;
+  background: #334155;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #1e293b;
+}
+
+/* Mobile Optimization */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+  }
   .card {
-    background: rgb(var(--surface));
-    border: 1px solid rgb(var(--border));
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: var(--card-shadow);
+    padding: 18px;
   }
-
-  .btn-primary {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium text-white;
-    background: rgb(var(--primary));
-  }
-
-  .btn-primary:hover {
-    background: rgb(var(--primary-light));
-  }
-
-  .sidebar-link {
-  @apply block px-4 py-2 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition font-medium;
-}
-
 }

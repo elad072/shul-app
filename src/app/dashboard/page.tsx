@@ -1,45 +1,46 @@
-import { createServerClientInstance } from "@/utils/supabase/server";
-import type { Database } from "@/lib/database.types";
+'use client';
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
-export default async function DashboardPage() {
-  const supabase = await createServerClientInstance();
+export default function Dashboard() {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false });
+  useEffect(() => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
 
-  if (error) {
-    console.error("Error loading profiles:", error.message);
-    return (
-      <div className="text-red-600 font-semibold">
-        אירעה שגיאה בטעינת המשתמשים.
-      </div>
-    );
-  }
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
-  const users = data as Profile[];
+        setProfile(data);
+      }
+    }
+    load();
+  }, []);
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/sign-in";
+  };
+
+  if (!user) return <div>טוען...</div>;
 
   return (
-    <div dir="rtl">
-      <h1 className="text-3xl font-bold mb-6">רשימת משתמשים</h1>
+    <div className="card">
+      <h1>ברוך הבא לבית הכנסת "מעון קודשך"</h1>
+      <h2>פרטי המשתמש</h2>
 
-      <div className="bg-white rounded-xl shadow border p-4 divide-y">
-        {users.length === 0 ? (
-          <div className="py-4 text-gray-500 text-center">
-            אין משתמשים להצגה.
-          </div>
-        ) : (
-          users.map((u) => (
-            <div key={u.id} className="py-3">
-              <span className="font-semibold">{u.first_name} {u.last_name}</span>
-              <span className="text-gray-600"> — {u.email}</span>
-            </div>
-          ))
-        )}
-      </div>
+      <p><strong>שם:</strong> {profile?.full_name || "לא זמין"}</p>
+      <p><strong>אימייל:</strong> {user.email}</p>
+
+      <button onClick={logout}>התנתק</button>
     </div>
   );
 }
