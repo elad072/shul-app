@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SignInPage() {
   const login = async () => {
@@ -10,9 +10,9 @@ export default function SignInPage() {
         redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: {
           access_type: "offline",
-          prompt: "consent"
-        }
-      }
+          prompt: "consent",
+        },
+      },
     });
   };
 
@@ -20,7 +20,6 @@ export default function SignInPage() {
     <div className="card">
       <h1>ברוך הבא לבית הכנסת "מעון קודשך"</h1>
       <h2>אנא התחבר כדי להמשיך</h2>
-
       <button onClick={login}>התחבר עם Google</button>
     </div>
   );
