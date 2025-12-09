@@ -1,8 +1,8 @@
-export default function PendingApprovalPage() {
+export default function PendingPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-center p-6">
-      <h1 className="text-3xl font-bold mb-4">הבקשה התקבלה</h1>
-      <p className="text-lg">אנחנו בודקים את הפרטים שלך. לאחר האישור תוכל להיכנס למערכת.</p>
+    <div style={{ padding: 40 }}>
+      <h1>בקשתך ממתינה לאישור</h1>
+      <p>אנו נודיע לך ברגע שהגבאי יאשר את פנייתך.</p>
     </div>
   );
 }

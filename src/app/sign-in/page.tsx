@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function SignInPage() {
   const login = async () => {
@@ -8,7 +8,11 @@ export default function SignInPage() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-      },
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent"
+        }
+      }
     });
   };
 
