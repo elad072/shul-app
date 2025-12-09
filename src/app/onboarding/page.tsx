@@ -1,9 +1,7 @@
-import { createSupabaseServer } from "@/lib/supabase/server";
 import Form from "./Form";
 import { redirect } from "next/navigation";
 
 export default async function OnboardingPage() {
-  const supabase = createSupabaseServer();
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/sign-in");

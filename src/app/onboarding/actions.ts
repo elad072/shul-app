@@ -1,10 +1,8 @@
 "use server";
 
-import { createSupabaseServer } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export async function submitOnboarding(formData: FormData) {
-  const supabase = createSupabaseServer();
 
   const id = formData.get("id") as string;
   const email = formData.get("email") as string;
