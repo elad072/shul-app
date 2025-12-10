@@ -1,10 +1,24 @@
-import { createSupabaseServer } from "@/lib/supabaseServer";
+import { createSupabaseServer } from "@/lib/supabase/server";
 
 export default async function ServerTest() {
   const supabase = createSupabaseServer();
-  const { data, error } = await supabase.auth.getUser();
+
+  // בצד שרת משתמשים רק ב־getSession
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  const user = sessionData?.session?.user;
 
   return (
-    <pre>{JSON.stringify({ user: data?.user, error }, null, 2)}</pre>
+    <pre>
+      {JSON.stringify(
+        {
+          user,
+          sessionError,
+        },
+        null,
+        2
+      )}
+    </pre>
   );
 }
