@@ -2,39 +2,52 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export async function GET(req: Request) {
-  console.log("🟡 Callback: נכנסנו ל־/auth/callback");
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get("code");
+  const next = requestUrl.searchParams.get("next") ?? "/dashboard";
 
-  const cookieStore = await cookies(); // ← זה הפתרון!
+  // --- התיקון האמיתי ל-Codespaces ---
+  // במקום לנחש, אנחנו לוקחים את הכתובת המקורית מה-Headers
+  // זה עובד גם ב-Localhost וגם בענן
+  const host = request.headers.get("x-forwarded-host") || requestUrl.host;
+  const protocol = request.headers.get("x-forwarded-proto") || "https";
+  
+  // בניית ה-Origin הנכון (בלי פורטים כפולים ובלי לשבור את הדומיין)
+  const origin = `${protocol}://${host}`;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+  if (code) {
+    const cookieStore = await cookies();
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // Server Component ignores setAll
+            }
+          },
         },
-        set(name: string, value: string) {
-          cookieStore.set(name, value);
-        },
-        remove(name: string) {
-          cookieStore.set(name, "");
-        },
-      },
+      }
+    );
+
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error) {
+      // הפניה לכתובת המחושבת מה-Headers + הנתיב הרצוי
+      return NextResponse.redirect(`${origin}${next}`);
     }
-  );
-
-  const { data, error } = await supabase.auth.exchangeCodeForSession(req.url);
-
-  console.log("🟢 Callback: נתונים שהתקבלו =", data);
-
-  if (error) {
-    console.error("🔴 Callback: שגיאה =", error);
-    return NextResponse.redirect("/sign-in");
   }
 
-  console.log("✅ Callback: הצלחה — session נוצר!");
-
-  return NextResponse.redirect("/dashboard");
+  // במקרה של שגיאה
+  return NextResponse.redirect(`${origin}/sign-in?error=auth-code-error`);
 }

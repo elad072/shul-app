@@ -12,45 +12,36 @@ export async function submitOnboarding(formData: FormData) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string) {
-          cookieStore.set(name, value);
-        },
-        remove(name: string) {
-          cookieStore.set(name, "");
+        getAll() { return cookieStore.getAll(); },
+        setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+            } catch {}
         },
       },
     }
   );
 
-  const { data: sessionData } = await supabase.auth.getUser();
-  const user = sessionData?.user;
-  if (!user) {
-    return redirect("/sign-in");
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return redirect("/sign-in");
 
   const first_name = formData.get("first_name") as string;
   const last_name = formData.get("last_name") as string;
   const phone = formData.get("phone") as string;
-  const gender = formData.get("gender") as string;
-  const member_type = formData.get("member_type") as string;
   const isGabbai = formData.get("isGabbai") === "on";
 
-  const role = isGabbai ? "gabbai" : member_type;
-
-  const { error } = await supabase.from("profile").insert({
+  // Upsert: מעדכן או יוצר. חובה onboarding_completed: true
+  const { error } = await supabase.from("profiles").upsert({
     id: user.id,
     email: user.email,
     first_name,
     last_name,
     phone,
-    gender,
-    member_type,
-    role,
+    is_gabbai: isGabbai,
+    role: isGabbai ? "gabbai" : "member",
     status: "pending_approval",
-    onboarding_completed: false,
+    onboarding_completed: true,
+    updated_at: new Date().toISOString()
   });
 
   if (error) {
