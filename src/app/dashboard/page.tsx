@@ -1,87 +1,119 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { Bell, Calendar, ChevronLeft, ShieldCheck } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export default async function Dashboard() {
+  const cookieStore = await cookies();
 
-export default async function DashboardPage() {
-  const supabase = createSupabaseServer();
-  const { data: { session } } = await supabase.auth.getSession();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {} },
+      },
+    }
+  );
 
-  if (!session) {
-    redirect("/sign-in");
-  }
-
-  const userId = session.user.id;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return redirect("/sign-in");
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", userId)
-    .maybeSingle();
-
-  // בהמשך נוסיף גם members לפי created_by / member_id
-  const status = profile?.status ?? "pending_approval";
-
-  const statusView = getStatusView(status);
+    .eq("id", user.id)
+    .single();
 
   return (
-    <div className="space-y-6">
-      <div className="page-card">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-          <div>
-            <h1 className="page-title mb-1">דשבורד חבר קהילה</h1>
-            <p className="page-subtitle mb-0">
-              זהו כרטיס החברות שלך בבית הכנסת "מעון קודשך".
+    <div className="space-y-8 font-sans">
+      
+      {/* כותרת וברכה */}
+      <header className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">
+            שלום, {profile?.first_name || "חבר יקר"} 👋
+          </h1>
+          <p className="text-slate-500 mt-1">ברוך הבא למערכת הניהול של בית הכנסת</p>
+        </div>
+        <div className="text-left hidden sm:block">
+          <p className="text-sm font-semibold text-slate-700">י"א כסלו, תשפ"ד</p>
+          <p className="text-xs text-slate-400">פרשת וישלח</p>
+        </div>
+      </header>
+
+      {/* אזור גבאי (מופיע רק אם יש הרשאה) */}
+      {profile?.is_gabbai && (
+        <div className="bg-gradient-to-l from-blue-50 to-indigo-50 border border-blue-100 p-6 rounded-2xl flex items-center justify-between shadow-sm">
+          <div className="flex gap-4 items-center">
+            <div className="bg-white p-3 rounded-full text-blue-600 shadow-sm">
+              <ShieldCheck size={24} />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800">אזור ניהול גבאים</h3>
+              <p className="text-sm text-slate-600">יש לך בקשות משתמשים הממתינות לאישור</p>
+            </div>
+          </div>
+          <a href="/gabbai/approvals" className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-md shadow-blue-200">
+            ניהול אישורים
+          </a>
+        </div>
+      )}
+
+      {/* הודעות ועדכונים (במקום הפסים השחורים) */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 text-slate-800">
+          <Bell size={20} className="text-blue-600" />
+          <h2 className="text-xl font-bold">מה חדש בבית הכנסת?</h2>
+        </div>
+        
+        <div className="grid gap-4">
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+            <div className="flex justify-between items-start mb-2">
+              <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">אירוע קרוב</span>
+              <span className="text-xs text-slate-400">לפני שעתיים</span>
+            </div>
+            <h3 className="font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">מסיבת חנוכה לילדי הקהילה 🍩</h3>
+            <p className="text-slate-500 mt-2 text-sm leading-relaxed">
+              ביום ראשון נר ראשון של חנוכה תתקיים מסיבה חגיגית לילדים עם הפעלות וסופגניות. כולם מוזמנים!
             </p>
           </div>
-          <div className="flex flex-col items-start md:items-end gap-2">
-            <span className="text-xs text-slate-500">סטטוס החברות</span>
-            {statusView}
+
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+            <div className="flex justify-between items-start mb-2">
+              <span className="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full font-bold">הודעה חשובה</span>
+              <span className="text-xs text-slate-400">אתמול</span>
+            </div>
+            <h3 className="font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">שינוי זמני תפילה לשבת</h3>
+            <p className="text-slate-500 mt-2 text-sm leading-relaxed">
+              שימו לב: מנחה של ערב שבת תוקדם ב-10 דקות עקב כניסת השבת המוקדמת.
+            </p>
           </div>
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <CardField label="שם מלא" value={`${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "טרם עודכן"} />
-          <CardField label="אימייל" value={profile?.email || session.user.email || "טרם עודכן"} />
-          <CardField label="טלפון" value={profile?.phone || "טרם עודכן"} />
-          <CardField label="תפקיד" value={profile?.role || "member"} />
-          <CardField label="סוג חבר" value={profile?.member_type || "israel"} />
-          <CardField
-            label="גבאי"
-            value={profile?.is_gabbai ? "כן, מוגדר כגבאי" : "לא"}
-          />
+      {/* זמני תפילות */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 text-slate-800">
+          <Calendar size={20} className="text-blue-600" />
+          <h2 className="text-xl font-bold">זמני תפילות להיום</h2>
         </div>
-      </div>
-
-      {/* מקום עתידי לכרטיסי משפחה / בקשות / הודעות */}
-      <div className="page-card">
-        <h2 className="text-lg font-semibold mb-2">משימות ובקשות</h2>
-        <p className="text-sm text-slate-600">
-          בשלב זה אין ממשק מלא למשפחה והודעות. זה יהיה השלב הבא:
-          הוספת בני משפחה, שליחת בקשות לגבאים, ניהול עליות, ועוד.
-        </p>
-      </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { name: "שחרית", time: "06:30", color: "border-l-4 border-l-orange-400" },
+            { name: "מנחה", time: "16:15", color: "border-l-4 border-l-blue-400" },
+            { name: "ערבית", time: "17:00", color: "border-l-4 border-l-indigo-400" },
+          ].map((item) => (
+            <div key={item.name} className={`bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-center items-center ${item.color}`}>
+              <span className="text-slate-400 text-xs font-medium">תפילת</span>
+              <span className="text-xl font-bold text-slate-800">{item.name}</span>
+              <span className="text-2xl font-black text-slate-900 mt-1 tracking-tight">{item.time}</span>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
-}
-
-function CardField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border border-slate-100 rounded-lg px-3 py-2 bg-slate-50/60">
-      <div className="text-xs text-slate-500 mb-1">{label}</div>
-      <div className="text-sm text-slate-900">{value || "—"}</div>
-    </div>
-  );
-}
-
-function getStatusView(status: string) {
-  switch (status) {
-    case "approved":
-      return <span className="badge-green">מאושר</span>;
-    case "rejected":
-      return <span className="badge-red">נדחה</span>;
-    case "pending_approval":
-    default:
-      return <span className="badge-yellow">ממתין לאישור</span>;
-  }
 }
