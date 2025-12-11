@@ -1,12 +1,7 @@
-export default function Home() {
-  return (
-    <div className="card">
-      <h1>ברוך הבא לבית הכנסת "מעון קודשך"</h1>
-      <h2>אנא עבור לעמוד ההתחברות</h2>
+import { redirect } from "next/navigation";
 
-      <a href="/sign-in">
-        <button>עבור להתחברות</button>
-      </a>
-    </div>
-  );
+export default function Home() {
+  // הפניה מיידית לדשבורד
+  // (המידלוואר יחסום אם המשתמש לא מחובר וישלח אותו להתחברות)
+  redirect("/dashboard");
 }
