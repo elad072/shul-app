@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Heebo } from "next/font/google";
+import { Viewport } from "next"; // ייבוא חדש לטיפול בתצוגת נייד
 
 // Components
 import Sidebar from "./components/dashboard/Sidebar"; 
@@ -12,12 +13,24 @@ const heebo = Heebo({
   variable: "--font-heebo", 
 });
 
+// 1. הגדרת המטה-דאטה החדשה
 export const metadata = {
-  title: "מעון קודשך - מערכת ניהול",
-  description: "מערכת ניהול קהילה מתקדמת",
+  title: "בית הכנסת מעון קודשך - אפליקציה",
+  description: "מערכת ניהול קהילה, תפילות ואירועים",
+  manifest: "/manifest.json", // אופציונלי לעתיד
   icons: {
-    icon: '/logo.png', // הגדרת האייקון ללשונית הדפדפן
+    icon: '/logo.png',       // אייקון רגיל לדפדפן
+    shortcut: '/logo.png',
+    apple: '/logo.png',      // 🔥 חובה בשביל אייפון/אייפד
   },
+};
+
+// 2. הגדרת Viewport (כדי שזה ירגיש כמו אפליקציה בנייד - בלי זום מיותר)
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Bell, Calendar, ShieldCheck, CheckCircle2, Clock, MapPin, BookOpen } from "lucide-react";
-import { getCurrentHebrewInfo, formatGregorianDate, toHebrewDateString } from "@/lib/hebrewUtils";
+import { getCurrentHebrewInfo, formatGregorianDate } from "@/lib/hebrewUtils";
+import Image from "next/image"; // ייבוא לתמונה
 
 export default async function Dashboard() {
   const cookieStore = await cookies();
@@ -24,7 +25,6 @@ export default async function Dashboard() {
       pendingCount = count || 0;
   }
 
-  // שליפות
   const { data: personalEvents } = await supabase
     .from("personal_events")
     .select("*")
@@ -67,23 +67,36 @@ export default async function Dashboard() {
     <div className="space-y-8 font-sans pb-24 md:pb-10">
       
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800">שלום, {profile?.first_name} 👋</h1>
-          <p className="text-slate-500 mt-1 text-sm md:text-base">ברוך הבא למערכת הניהול</p>
+        <div className="flex items-center gap-3">
+          {/* לוגו בנייד - מוצג רק במסכים קטנים */}
+          <div className="block md:hidden relative w-12 h-12 rounded-full overflow-hidden border border-slate-200 shadow-sm">
+             <Image src="/logo.png" alt="לוגו" fill className="object-cover" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
+              שלום, {profile?.first_name} 👋
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm md:text-base">ברוך הבא למערכת הניהול</p>
+          </div>
         </div>
+        
         <div className="w-full md:w-auto bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-2">
           <div className="text-right md:text-left">
              <p className="text-lg font-bold text-slate-800 text-blue-700 leading-none mb-1">{hebrewInfo.dateString}</p>
              <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                <span>{hebrewInfo.gregorianDate}</span>
+                <span className="tracking-wide">{hebrewInfo.gregorianDate}</span>
                 <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                 <span>פרשת {hebrewInfo.parasha}</span>
              </div>
           </div>
+          {/* אייקון לוח שנה במחשב בלבד */}
+          <div className="hidden md:block bg-blue-50 p-2 rounded-full text-blue-600">
+             <Calendar size={20} />
+          </div>
         </div>
       </header>
 
-      {/* אזור גבאי */}
+      {/* המשך הדף זהה למה שהיה קודם... */}
       {profile?.is_gabbai && (
         <div className={`border p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm ${pendingCount > 0 ? "bg-orange-50 border-orange-100" : "bg-green-50 border-green-100"}`}>
           <div className="flex gap-4 items-center">
@@ -104,7 +117,6 @@ export default async function Dashboard() {
         </div>
       )}
 
-      {/* הודעות קהילה */}
       <section className="space-y-3">
         <div className="flex items-center gap-2 text-slate-800 px-1">
           <Bell size={18} className="text-blue-600" />
@@ -116,12 +128,7 @@ export default async function Dashboard() {
             <div key={msg.id} className={`p-4 rounded-xl border shadow-sm transition-shadow ${msg.is_pinned ? 'bg-orange-50/50 border-orange-200' : 'bg-white border-slate-100'}`}>
               <div className="flex justify-between items-start mb-2">
                 {msg.is_pinned && <span className="bg-orange-100 text-orange-700 text-[10px] px-2 py-0.5 rounded-full font-bold">נעוץ</span>}
-                {/* --- תאריך עדכון/יצירה של ההודעה --- */}
-                <span className="text-[10px] text-slate-400 mr-auto flex gap-1">
-                    <span>{new Date(msg.created_at).toLocaleDateString('he-IL')}</span>
-                    <span className="opacity-50">|</span>
-                    <span>{toHebrewDateString(msg.created_at)}</span>
-                </span>
+                <span className="text-[10px] text-slate-400 mr-auto">{new Date(msg.created_at).toLocaleDateString('he-IL')}</span>
               </div>
               <h3 className="font-bold text-base text-slate-800">{msg.title}</h3>
               <p className="text-slate-600 mt-1 text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
@@ -131,14 +138,11 @@ export default async function Dashboard() {
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
-          {/* זמני תפילות */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-slate-800 px-1">
               <Clock size={18} className="text-blue-600" />
               <h2 className="text-lg font-bold">לוח זמנים</h2>
             </div>
-            
             <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                 <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 font-bold text-sm text-slate-600">
                     היום ({days[today]})
@@ -155,7 +159,6 @@ export default async function Dashboard() {
                         </div>
                     ))}
                 </div>
-
                 {today !== 6 && (
                     <>
                         <div className="bg-slate-50 px-4 py-2 border-y border-slate-200 font-bold text-sm text-slate-600 mt-2">
@@ -178,15 +181,12 @@ export default async function Dashboard() {
             </div>
           </section>
 
-          {/* אירועים */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-slate-800 px-1">
               <Calendar size={18} className="text-green-600" />
               <h2 className="text-lg font-bold">אירועים קרובים</h2>
             </div>
-            
             <div className="space-y-3">
-               {/* אירועי קהילה - עם תאריך עברי */}
                {communityEvents?.map((ev) => (
                  <div key={ev.id} className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex gap-3">
                     <div className="bg-green-50 text-green-700 p-2 rounded-lg text-center min-w-[50px] flex flex-col justify-center">
@@ -198,14 +198,9 @@ export default async function Dashboard() {
                        <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
                          <MapPin size={10} /> {ev.location || 'בית הכנסת'} | {new Date(ev.start_time).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'})}
                        </p>
-                       {/* כאן הוספתי את התאריך העברי לאירוע */}
-                       <p className="text-[10px] text-green-600 mt-1 font-medium">
-                           {toHebrewDateString(ev.start_time)}
-                       </p>
                     </div>
                  </div>
                ))}
-
                {personalEvents?.map((event: any) => (
                 <div key={event.id} className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center">
                    <div>
@@ -219,7 +214,6 @@ export default async function Dashboard() {
                    </div>
                 </div>
               ))}
-              
               {communityEvents?.length === 0 && personalEvents?.length === 0 && (
                   <p className="text-slate-400 text-sm px-1">אין אירועים קרובים</p>
               )}
