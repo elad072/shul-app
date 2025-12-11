@@ -12,7 +12,7 @@ export default async function OnboardingPage() {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll() {} // לא נדרש כאן כי זה דף GET
+        setAll() {} // GET page — אין צורך לשכתב עוגיות
       },
     }
   );
@@ -20,7 +20,6 @@ export default async function OnboardingPage() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/sign-in");
 
-  // שליפת פרופיל קיים (אם יש)
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
@@ -28,9 +27,19 @@ export default async function OnboardingPage() {
     .single();
 
   return (
-    <div className="card" style={{ direction: "rtl", textAlign: "center", padding: "2rem" }}>
-      <h1>השלמת פרטים</h1>
-      <Form profile={profile} />
+    <div className="flex justify-center px-4 py-10">
+      <div className="w-full max-w-xl bg-white rounded-xl shadow-md border border-slate-200 p-8">
+        
+        <h1 className="text-2xl font-bold text-slate-900 mb-4 text-center">
+          השלמת פרטים
+        </h1>
+
+        <p className="text-sm text-slate-600 mb-6 text-center">
+          אנא השלם את פרטיך לצורך רישום לבית הכנסת.
+        </p>
+
+        <Form profile={profile} />
+      </div>
     </div>
   );
 }

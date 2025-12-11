@@ -1,37 +1,44 @@
 'use client';
 
 import { supabase } from "@/lib/supabaseClient";
+import { LogIn } from "lucide-react";
 
 export default function SignInPage() {
   const login = async () => {
-    // בניית הכתובת ללא פורטים
     const redirectTo = `${window.location.origin}/auth/callback`;
-
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: redirectTo,
+        redirectTo,
         queryParams: {
           access_type: "offline",
-          
-          // 🔥 כדי לבטל את הבחירה כל פעם - שים // בתחילת השורה למטה
-          // 🔥 כדי להחזיר את הבחירה - מחק את ה-//
-          prompt: "consent", 
+          // prompt: "consent",
         },
       },
     });
   };
 
   return (
-    <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1>ברוך הבא לבית הכנסת "מעון קודשך"</h1>
-      <h2>אנא התחבר כדי להמשיך</h2>
-      <button 
-        onClick={login}
-        style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}
-      >
-        התחבר עם Google
-      </button>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-8 border border-slate-200">
+
+        <h1 className="text-3xl font-bold text-slate-900 text-center mb-2">
+          מעון קודשך
+        </h1>
+
+        <p className="text-slate-600 text-center mb-8">
+          מערכת ניהול קהילה — התחברות מאובטחת
+        </p>
+
+        <button
+          onClick={login}
+          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl shadow transition"
+        >
+          <LogIn size={20} />
+          התחבר עם Google
+        </button>
+
+      </div>
     </div>
   );
 }
