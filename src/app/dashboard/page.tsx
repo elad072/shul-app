@@ -1,20 +1,15 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { Bell, Calendar, ChevronLeft, ShieldCheck } from "lucide-react";
+import { Bell, Calendar, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { getCurrentHebrewInfo, formatGregorianDate, toHebrewNumeral } from "@/lib/hebrewUtils";
 
 export default async function Dashboard() {
   const cookieStore = await cookies();
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {} },
-      },
-    }
+    { cookies: { getAll() { return cookieStore.getAll(); } } }
   );
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -26,80 +21,103 @@ export default async function Dashboard() {
     .eq("id", user.id)
     .single();
 
+  const hebrewInfo = getCurrentHebrewInfo();
+
+  let pendingCount = 0;
+  if (profile?.is_gabbai) {
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending_approval");
+      pendingCount = count || 0;
+  }
+
+  const { data: upcomingEvents } = await supabase
+    .from("personal_events")
+    .select("*")
+    .eq("created_by", user.id)
+    .gte("gregorian_date", new Date().toISOString())
+    .order("gregorian_date", { ascending: true })
+    .limit(3);
+
   return (
     <div className="space-y-8 font-sans">
       
-      {/* כותרת וברכה */}
       <header className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">
             שלום, {profile?.first_name || "חבר יקר"} 👋
           </h1>
-          <p className="text-slate-500 mt-1">ברוך הבא למערכת הניהול של בית הכנסת</p>
+          <p className="text-slate-500 mt-1">ברוך הבא למערכת הניהול</p>
         </div>
-        <div className="text-left hidden sm:block">
-          <p className="text-sm font-semibold text-slate-700">י"א כסלו, תשפ"ד</p>
-          <p className="text-xs text-slate-400">פרשת וישלח</p>
+        
+        <div className="text-left hidden sm:flex flex-col items-end bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p className="text-xl font-bold text-slate-800 text-blue-700 leading-none mb-1">
+             {hebrewInfo.dateString}
+          </p>
+          <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
+             <span className="tracking-wide">{hebrewInfo.gregorianDate}</span>
+             <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+             <span>פרשת {hebrewInfo.parasha}</span>
+          </div>
         </div>
       </header>
 
-      {/* אזור גבאי (מופיע רק אם יש הרשאה) */}
       {profile?.is_gabbai && (
-        <div className="bg-gradient-to-l from-blue-50 to-indigo-50 border border-blue-100 p-6 rounded-2xl flex items-center justify-between shadow-sm">
+        <div className={`border p-6 rounded-2xl flex items-center justify-between shadow-sm ${pendingCount > 0 ? "bg-orange-50 border-orange-100" : "bg-green-50 border-green-100"}`}>
           <div className="flex gap-4 items-center">
-            <div className="bg-white p-3 rounded-full text-blue-600 shadow-sm">
-              <ShieldCheck size={24} />
+            <div className={`p-3 rounded-full shadow-sm ${pendingCount > 0 ? "bg-white text-orange-600" : "bg-white text-green-600"}`}>
+              {pendingCount > 0 ? <ShieldCheck size={24} /> : <CheckCircle2 size={24} />}
             </div>
             <div>
               <h3 className="font-bold text-slate-800">אזור ניהול גבאים</h3>
-              <p className="text-sm text-slate-600">יש לך בקשות משתמשים הממתינות לאישור</p>
+              <p className="text-sm text-slate-600">
+                {pendingCount > 0 
+                  ? `ישנן ${pendingCount} בקשות ממתינות לאישור` 
+                  : "אין בקשות חדשות, הכל מעודכן!"}
+              </p>
             </div>
           </div>
-          <a href="/gabbai/approvals" className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-md shadow-blue-200">
-            ניהול אישורים
+          <a href="/gabbai/approvals" className={`px-5 py-2.5 rounded-xl font-medium transition-colors shadow-md ${pendingCount > 0 ? "bg-orange-600 text-white hover:bg-orange-700 shadow-orange-200" : "bg-white text-green-700 border border-green-200 hover:bg-green-50"}`}>
+            {pendingCount > 0 ? "ניהול אישורים" : "צפייה ברשימה"}
           </a>
         </div>
       )}
 
-      {/* הודעות ועדכונים (במקום הפסים השחורים) */}
       <section className="space-y-4">
         <div className="flex items-center gap-2 text-slate-800">
           <Bell size={20} className="text-blue-600" />
-          <h2 className="text-xl font-bold">מה חדש בבית הכנסת?</h2>
+          <h2 className="text-xl font-bold">אירועים קרובים במשפחה</h2>
         </div>
         
-        <div className="grid gap-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <div className="flex justify-between items-start mb-2">
-              <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">אירוע קרוב</span>
-              <span className="text-xs text-slate-400">לפני שעתיים</span>
+        {(!upcomingEvents || upcomingEvents.length === 0) ? (
+            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm text-center text-slate-400">
+                אין אירועים קרובים (הוסף דרך "ניהול משפחה")
             </div>
-            <h3 className="font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">מסיבת חנוכה לילדי הקהילה 🍩</h3>
-            <p className="text-slate-500 mt-2 text-sm leading-relaxed">
-              ביום ראשון נר ראשון של חנוכה תתקיים מסיבה חגיגית לילדים עם הפעלות וסופגניות. כולם מוזמנים!
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <div className="flex justify-between items-start mb-2">
-              <span className="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full font-bold">הודעה חשובה</span>
-              <span className="text-xs text-slate-400">אתמול</span>
+        ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {upcomingEvents.map((event: any) => (
+                <div key={event.id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                   <div className="flex justify-between items-start mb-2">
+                      <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full font-bold">
+                        {event.event_type === 'birthday' ? 'יום הולדת' : 'אירוע משפחתי'}
+                      </span>
+                      <span className="text-xs text-slate-400">{formatGregorianDate(event.gregorian_date)}</span>
+                   </div>
+                   <h3 className="font-bold text-lg text-slate-800">{event.description}</h3>
+                   {/* כאן התיקון: שימוש ב-toHebrewNumeral */}
+                   <p className="text-sm text-slate-500 mt-1">{toHebrewNumeral(event.hebrew_day)} ב{event.hebrew_month}</p>
+                </div>
+              ))}
             </div>
-            <h3 className="font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">שינוי זמני תפילה לשבת</h3>
-            <p className="text-slate-500 mt-2 text-sm leading-relaxed">
-              שימו לב: מנחה של ערב שבת תוקדם ב-10 דקות עקב כניסת השבת המוקדמת.
-            </p>
-          </div>
-        </div>
+        )}
       </section>
 
-      {/* זמני תפילות */}
       <section className="space-y-4">
-        <div className="flex items-center gap-2 text-slate-800">
+           <div className="flex items-center gap-2 text-slate-800">
           <Calendar size={20} className="text-blue-600" />
           <h2 className="text-xl font-bold">זמני תפילות להיום</h2>
         </div>
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { name: "שחרית", time: "06:30", color: "border-l-4 border-l-orange-400" },

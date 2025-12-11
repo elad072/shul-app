@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { redirect } from "next/navigation";
+import { toHebrewDateString } from "@/lib/hebrewUtils";
 
 export async function submitOnboarding(formData: FormData) {
   const cookieStore = await cookies();
@@ -13,11 +14,7 @@ export async function submitOnboarding(formData: FormData) {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-            } catch {}
-        },
+        setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {} },
       },
     }
   );
@@ -29,9 +26,20 @@ export async function submitOnboarding(formData: FormData) {
   const last_name = formData.get("last_name") as string;
   const phone = formData.get("phone") as string;
   const isGabbai = formData.get("isGabbai") === "on";
+  
+  // הוספנו תאריך לידה לטופס ה-Onboarding? אם לא, כדאי להוסיף. אם אין, נשלח null
+  // נניח שכרגע אין בטופס ה-HTML, אז נשמור null ונאפשר לו לערוך אח"כ
+  // אבל אם תוסיף שדה בטופס בשם birth_date, תוכל לקלוט אותו כאן:
+  const birth_date_raw = formData.get("birth_date") as string; 
+  const birth_date = birth_date_raw || null;
+  
+  let hebrew_birth_date = null;
+  if (birth_date) {
+      hebrew_birth_date = toHebrewDateString(birth_date);
+  }
 
-  // Upsert: מעדכן או יוצר. חובה onboarding_completed: true
-  const { error } = await supabase.from("profiles").upsert({
+  // 1. עדכון הפרופיל (נתוני מערכת וסטטוס)
+  const { error: profileError } = await supabase.from("profiles").upsert({
     id: user.id,
     email: user.email,
     first_name,
@@ -41,12 +49,41 @@ export async function submitOnboarding(formData: FormData) {
     role: isGabbai ? "gabbai" : "member",
     status: "pending_approval",
     onboarding_completed: true,
+    birth_date,          // שמירה גם בפרופיל
+    hebrew_birth_date,   // שמירה גם בפרופיל
     updated_at: new Date().toISOString()
   });
 
-  if (error) {
-    console.error("❌ Error saving onboarding:", error);
+  if (profileError) {
+    console.error("❌ Error updating profile:", profileError);
     throw new Error("Failed to save onboarding");
+  }
+
+  // 2. יצירת רשומה בטבלת members עבור ראש המשפחה (החלק החדש והחשוב!)
+  // אנו בודקים אם קיים כבר כדי לא ליצור כפילויות במקרה של הרצה חוזרת
+  const { data: existingMember } = await supabase
+    .from("members")
+    .select("id")
+    .eq("created_by", user.id)
+    .eq("role", "head")
+    .single();
+
+  if (!existingMember) {
+      const { error: memberError } = await supabase.from("members").insert({
+          first_name,
+          last_name, // שומרים שם משפחה בנפרד אם יש, או כחלק מהשם
+          role: 'head',
+          gender: 'male', // ברירת מחדל, המשתמש יוכל לערוך אח"כ
+          birth_date,
+          hebrew_birth_date,
+          created_by: user.id,
+          is_student: false
+      });
+
+      if (memberError) {
+          console.error("❌ Error creating member record:", memberError);
+          // לא נכשיל את כל התהליך אם זה נכשל, אבל נרשום לוג
+      }
   }
 
   return redirect("/pending");
