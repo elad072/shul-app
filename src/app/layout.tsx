@@ -3,7 +3,6 @@ import { Heebo } from "next/font/google";
 
 // Components
 import Sidebar from "./components/dashboard/Sidebar"; 
-// הייבוא הזה עובד רק אם יש export default ב-FamilyPanel.tsx
 import ProfilePanel from "./components/dashboard/FamilyPanel"; 
 import { MobileTabs } from "./components/dashboard/MobileTabs";
 
@@ -16,6 +15,9 @@ const heebo = Heebo({
 export const metadata = {
   title: "מעון קודשך - מערכת ניהול",
   description: "מערכת ניהול קהילה מתקדמת",
+  icons: {
+    icon: '/logo.png', // הגדרת האייקון ללשונית הדפדפן
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -23,12 +25,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl">
       <body className={`${heebo.className} bg-slate-50 text-slate-900 flex h-screen overflow-hidden selection:bg-blue-100 selection:text-blue-900`}>
 
-        {/* --- צד ימין (תפריט) --- */}
+        {/* Desktop Sidebar (Right) */}
         <aside className="w-64 bg-white border-l border-slate-200 hidden lg:flex flex-col shadow-sm z-20 flex-shrink-0">
           <Sidebar />
         </aside>
 
-        {/* --- תוכן ראשי --- */}
+        {/* Main Content */}
         <main className="flex-1 overflow-y-auto relative flex flex-col min-w-0">
           <div className="flex-1 p-4 md:p-8 pb-24 lg:pb-8 max-w-5xl mx-auto w-full">
             {children}
@@ -36,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MobileTabs />
         </main>
 
-        {/* --- צד שמאל (פרופיל) --- */}
+        {/* Desktop Profile Panel (Left) */}
         <aside className="w-[26rem] bg-white border-r border-slate-200 hidden xl:flex flex-col shadow-sm z-10 flex-shrink-0">
           <ProfilePanel />
         </aside>

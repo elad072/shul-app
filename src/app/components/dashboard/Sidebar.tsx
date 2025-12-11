@@ -2,6 +2,7 @@
 
 import { Home, Users, LogOut } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // ייבוא רכיב תמונה
 import { usePathname, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 
@@ -22,8 +23,20 @@ export default function Sidebar() {
 
   return (
     <nav className="flex flex-col h-full bg-white text-slate-600">
-      <div className="p-6 border-b border-slate-100">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+      
+      {/* אזור הלוגו */}
+      <div className="p-6 border-b border-slate-100 flex flex-col items-center text-center">
+        <div className="relative w-20 h-20 mb-3">
+           {/* כאן נכנסת התמונה ששמרת בתיקיית public */}
+           <Image 
+             src="/logo.png" 
+             alt="לוגו מעון קודשך" 
+             fill 
+             className="object-contain"
+             priority
+           />
+        </div>
+        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
           מעון קודשך
         </h1>
         <p className="text-xs text-slate-400 font-medium tracking-wide mt-1">
