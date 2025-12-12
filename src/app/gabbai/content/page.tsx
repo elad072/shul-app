@@ -8,18 +8,43 @@ export default async function GabbaiContentPage() {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll() { return cookieStore.getAll() } } }
+    { cookies: { getAll() { return cookieStore.getAll(); } } }
   );
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
-  const { data: profile } = await supabase.from("profiles").select("is_gabbai").eq("id", user.id).single();
-  if (!profile?.is_gabbai) return <div className="p-10 text-center">אין לך הרשאה לצפות בדף זה</div>;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_gabbai")
+    .eq("id", user.id)
+    .single();
 
-  // שליפת כל הנתונים והעברתם לטאבים
-  const { data: announcements } = await supabase.from("announcements").select("*").order("created_at", { ascending: false });
-  const { data: events } = await supabase.from("community_events").select("*").order("start_time", { ascending: true });
+  if (!profile?.is_gabbai) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="bg-white border rounded-2xl p-8 shadow-sm text-center">
+          <h2 className="font-bold text-lg text-slate-800 mb-2">
+            אין הרשאה
+          </h2>
+          <p className="text-slate-500 text-sm">
+            אין לך הרשאה לצפות בדף זה
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { data: announcements } = await supabase
+    .from("announcements")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const { data: events } = await supabase
+    .from("community_events")
+    .select("*")
+    .order("start_time", { ascending: true });
+
   const { data: schedules } = await supabase
     .from("schedules")
     .select("*")
@@ -27,17 +52,50 @@ export default async function GabbaiContentPage() {
     .order("time_of_day", { ascending: true });
 
   return (
-    <div className="max-w-3xl mx-auto p-4 md:p-8 font-sans pb-24">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">ניהול תוכן</h1>
-        <a href="/dashboard" className="text-sm bg-white border px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50">חזרה</a>
+    <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 font-sans">
+      {/* Breadcrumb */}
+      <div className="text-xs text-slate-400 mb-3">
+        דשבורד / ניהול גבאים
       </div>
-      
-      <GabbaiTabs 
-        announcements={announcements || []} 
-        events={events || []} 
-        schedules={schedules || []} 
-      />
+
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-l from-slate-100 via-white to-white p-6 md:p-8 mb-8 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-800">
+              ניהול תוכן הקהילה
+            </h1>
+            <p className="text-slate-500 mt-2 max-w-xl">
+              ניהול הודעות, אירועים וזמני תפילות עבור חברי הקהילה
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href="/gabbai/message-builder"
+              className="inline-flex items-center justify-center bg-green-600 text-white px-6 py-3 rounded-2xl font-bold shadow hover:bg-green-700 transition"
+            >
+              📢 שליחת הודעה לקהילה
+            </a>
+
+            <a
+              href="/dashboard"
+              className="inline-flex items-center justify-center bg-white border px-6 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition"
+            >
+              חזרה לדשבורד
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="bg-white rounded-3xl border shadow-sm p-4 md:p-6">
+        <GabbaiTabs
+          announcements={announcements || []}
+          events={events || []}
+          schedules={schedules || []}
+        />
+      </div>
     </div>
   );
 }
