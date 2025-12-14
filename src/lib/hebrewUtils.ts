@@ -90,3 +90,46 @@ export function getCurrentHebrewInfo() {
     parasha: parashaName,
   };
 }
+
+/**
+ * חישוב תאריך עברי עם תמיכה בלידה לאחר צאת הכוכבים
+ */
+export function getHebrewDatePartsWithSunsetAdjustment(
+  dateString: string,
+  bornAfterSunset: boolean
+) {
+  if (!dateString) return null;
+
+  const baseDate = new Date(dateString);
+
+  // אם הלידה אחרי צאת הכוכבים – קופצים יום
+  if (bornAfterSunset) {
+    baseDate.setDate(baseDate.getDate() + 1);
+  }
+
+  const hdate = new HDate(baseDate);
+  const monthNameEng = hdate.getMonthName();
+  const monthNameHeb = Locale.gettext(monthNameEng, 'he');
+
+  return {
+    day: hdate.getDate(),
+    month: monthNameHeb,
+    display: `${toHebrewNumeral(hdate.getDate())} ב${monthNameHeb}`,
+  };
+}
+
+/**
+ * המרה לועזי → עברי (כולל בדיקת צאת הכוכבים)
+ */
+export function toHebrewDateStringAdjusted(
+  dateString: string,
+  bornAfterSunset: boolean
+): string {
+  const parts = getHebrewDatePartsWithSunsetAdjustment(
+    dateString,
+    bornAfterSunset
+  );
+
+  if (!parts) return "";
+  return parts.display;
+}

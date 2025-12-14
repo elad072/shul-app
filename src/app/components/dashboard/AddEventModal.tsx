@@ -1,98 +1,130 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { addFamilyEvent, updateFamilyEvent } from "./familyActions";
-import { formatForInput } from "@/lib/hebrewUtils";
 
-export default function AddEventModal({ isOpen, onClose, memberData, eventData, onSuccess }: any) {
-  const [loading, setLoading] = useState(false);
-  
-  // אם eventData קיים, אנחנו במצב עריכה
-  const isEditMode = !!eventData;
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  member: any;
+  initialData?: any;
+  onSuccess?: () => void;
+};
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    const formData = new FormData(event.currentTarget);
-    
-    try {
-      if (isEditMode) {
-        await updateFamilyEvent(eventData.id, formData);
-      } else {
-        await addFamilyEvent(formData);
-      }
-      onSuccess();
-      onClose();
-    } catch (e) {
-      alert("שגיאה בשמירה");
-      console.error(e);
-    } finally {
-      setLoading(false);
+export default function AddEventModal({
+  isOpen,
+  onClose,
+  member,
+  initialData,
+  onSuccess,
+}: Props) {
+  const [eventType, setEventType] = useState("birthday");
+  const [description, setDescription] = useState("");
+  const [gregorianDate, setGregorianDate] = useState("");
+
+  /* sync edit mode */
+  useEffect(() => {
+    if (initialData) {
+      setEventType(initialData.event_type || "birthday");
+      setDescription(initialData.description || "");
+      setGregorianDate(initialData.gregorian_date || "");
+    } else {
+      setEventType("birthday");
+      setDescription("");
+      setGregorianDate("");
     }
+  }, [initialData]);
+
+  if (!isOpen || !member) return null;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    const fd = new FormData();
+    fd.append("event_type", eventType);
+    fd.append("description", description);
+    fd.append("gregorian_date", gregorianDate);
+    fd.append("member_id", member.id);
+
+    if (initialData?.id) {
+      await updateFamilyEvent(initialData.id, fd);
+    } else {
+      await addFamilyEvent(fd);
+    }
+
+    onSuccess?.();
+    onClose();
   }
 
-  if (!isOpen) return null;
-
-  const defaultDate = eventData?.gregorian_date ? formatForInput(eventData.gregorian_date) : "";
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 animate-in zoom-in duration-200">
-         <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-slate-800">
-               {isEditMode ? "עריכת אירוע" : `הוספת אירוע ל${memberData.first_name}`}
-            </h3>
-            <button onClick={onClose}><X size={20} className="text-slate-400" /></button>
-         </div>
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6 space-y-6">
 
-         <form onSubmit={handleSubmit} className="space-y-4">
-           {/* אם זו הוספה חדשה, צריך לשלוח member_id */}
-           {!isEditMode && <input type="hidden" name="member_id" value={memberData.id} />}
-           
-           <div>
-             <label className="text-sm font-medium text-slate-700">תיאור האירוע</label>
-             <input 
-                name="description" 
-                required 
-                placeholder="למשל: יום הולדת 10" 
-                defaultValue={eventData?.description || ""}
-                className="w-full border p-2 rounded-lg mt-1" 
-             />
-           </div>
+        {/* Header */}
+        <header className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">
+            {initialData ? "עריכת אירוע" : "הוספת אירוע"}
+          </h2>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-800">
+            <X />
+          </button>
+        </header>
 
-           <div>
-             <label className="text-sm font-medium text-slate-700">סוג אירוע</label>
-             <select 
-                name="event_type" 
-                className="w-full border p-2 rounded-lg mt-1 bg-white"
-                defaultValue={eventData?.event_type || "birthday"}
-             >
-               <option value="birthday">יום הולדת 🎂</option>
-               <option value="anniversary">יום נישואין 💍</option>
-               <option value="yahrzeit">יארצייט (אזכרה) 🕯️</option>
-               <option value="other">אחר</option>
-             </select>
-           </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-           <div>
-             <label className="text-sm font-medium text-slate-700">תאריך לועזי</label>
-             <input 
-                name="event_date" 
-                type="date" 
-                required 
-                defaultValue={defaultDate}
-                className="w-full border p-2 rounded-lg mt-1" 
-             />
-           </div>
+          <div>
+            <label className="text-sm font-medium">סוג אירוע</label>
+            <select
+              className="mt-1 w-full border rounded-xl p-3"
+              value={eventType}
+              onChange={(e) => setEventType(e.target.value)}
+            >
+              <option value="birthday">יום הולדת</option>
+              <option value="anniversary">יום נישואין</option>
+              <option value="yahrzeit">יארצייט</option>
+              <option value="other">אחר</option>
+            </select>
+          </div>
 
-           <div className="flex gap-2 mt-6">
-             <button type="button" onClick={onClose} className="flex-1 py-2 bg-slate-100 rounded-lg text-slate-600 font-medium">ביטול</button>
-             <button type="submit" disabled={loading} className="flex-1 py-2 bg-blue-600 rounded-lg text-white font-medium hover:bg-blue-700">
-               {loading ? "שומר..." : "שמור"}
-             </button>
-           </div>
-         </form>
+          <div>
+            <label className="text-sm font-medium">תיאור</label>
+            <input
+              className="mt-1 w-full border rounded-xl p-3"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">תאריך לועזי</label>
+            <input
+              type="date"
+              className="mt-1 w-full border rounded-xl p-3"
+              value={gregorianDate}
+              onChange={(e) => setGregorianDate(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl border"
+            >
+              ביטול
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700"
+            >
+              שמירה
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

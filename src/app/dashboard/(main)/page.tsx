@@ -1,37 +1,40 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { Bell, Calendar, ShieldCheck, CheckCircle2, Clock, MapPin, BookOpen } from "lucide-react";
+import Image from "next/image";
+import {
+  Bell,
+  Calendar,
+  MapPin,
+} from "lucide-react";
+
 import { getCurrentHebrewInfo, formatGregorianDate } from "@/lib/hebrewUtils";
-import Image from "next/image"; // ייבוא לתמונה
 
 export default async function Dashboard() {
   const cookieStore = await cookies();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll() { return cookieStore.getAll(); } } }
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+      },
+    }
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return redirect("/sign-in");
+  if (!user) redirect("/sign-in");
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  const hebrewInfo = getCurrentHebrewInfo();
-
-  let pendingCount = 0;
-  if (profile?.is_gabbai) {
-      const { count } = await supabase.from("profiles").select("*", { count: "exact", head: true }).eq("status", "pending_approval");
-      pendingCount = count || 0;
-  }
-
-  const { data: personalEvents } = await supabase
-    .from("personal_events")
+  const { data: profile } = await supabase
+    .from("profiles")
     .select("*")
-    .eq("created_by", user.id)
-    .gte("gregorian_date", new Date().toISOString())
-    .order("gregorian_date", { ascending: true })
-    .limit(3);
+    .eq("id", user.id)
+    .single();
+
+  const hebrewInfo = getCurrentHebrewInfo();
 
   const { data: announcements } = await supabase
     .from("announcements")
@@ -45,181 +48,140 @@ export default async function Dashboard() {
     .select("*")
     .gte("start_time", new Date().toISOString())
     .order("start_time", { ascending: true })
-    .limit(2);
+    .limit(3);
 
-  const today = new Date().getDay();
-  const { data: todaysSchedule } = await supabase
-    .from("schedules")
+  const { data: personalEvents } = await supabase
+    .from("personal_events")
     .select("*")
-    .or(`day_of_week.eq.${today},day_of_week.is.null`)
-    .order("time_of_day", { ascending: true });
-
-  const { data: shabbatSchedule } = await supabase
-    .from("schedules")
-    .select("*")
-    .in("day_of_week", [5, 6])
-    .order("day_of_week", { ascending: true })
-    .order("time_of_day", { ascending: true });
-
-  const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+    .eq("created_by", user.id)
+    .gte("gregorian_date", new Date().toISOString())
+    .order("gregorian_date", { ascending: true })
+    .limit(3);
 
   return (
-    <div className="space-y-8 font-sans pb-24 md:pb-10">
-      
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div className="flex items-center gap-3">
-          {/* לוגו בנייד - מוצג רק במסכים קטנים */}
-          <div className="block md:hidden relative w-12 h-12 rounded-full overflow-hidden border border-slate-200 shadow-sm">
-             <Image src="/logo.png" alt="לוגו" fill className="object-cover" />
+    <div className="space-y-10">
+
+      {/* ===== Header ===== */}
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="flex items-center gap-4">
+          <div className="relative w-14 h-14 rounded-full overflow-hidden border shadow-sm">
+            <Image src="/logo.png" alt="לוגו" fill />
           </div>
+
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
+            <h1 className="text-2xl font-bold text-slate-800">
               שלום, {profile?.first_name} 👋
             </h1>
-            <p className="text-slate-500 mt-1 text-sm md:text-base">ברוך הבא למערכת הניהול</p>
+            <p className="text-sm text-slate-500">
+              {hebrewInfo.dateString} · פרשת {hebrewInfo.parasha}
+            </p>
           </div>
         </div>
-        
-        <div className="w-full md:w-auto bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-2">
-          <div className="text-right md:text-left">
-             <p className="text-lg font-bold text-slate-800 text-blue-700 leading-none mb-1">{hebrewInfo.dateString}</p>
-             <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                <span className="tracking-wide">{hebrewInfo.gregorianDate}</span>
-                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                <span>פרשת {hebrewInfo.parasha}</span>
-             </div>
-          </div>
-          {/* אייקון לוח שנה במחשב בלבד */}
-          <div className="hidden md:block bg-blue-50 p-2 rounded-full text-blue-600">
-             <Calendar size={20} />
-          </div>
+
+        <div className="bg-white px-5 py-3 rounded-2xl border shadow-sm text-center">
+          <p className="text-sm text-slate-400">היום</p>
+          <p className="font-bold text-blue-700">
+            {hebrewInfo.gregorianDate}
+          </p>
         </div>
       </header>
 
-      {/* המשך הדף זהה למה שהיה קודם... */}
-      {profile?.is_gabbai && (
-        <div className={`border p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm ${pendingCount > 0 ? "bg-orange-50 border-orange-100" : "bg-green-50 border-green-100"}`}>
-          <div className="flex gap-4 items-center">
-            <div className={`p-3 rounded-full shadow-sm ${pendingCount > 0 ? "bg-white text-orange-600" : "bg-white text-green-600"}`}>
-              {pendingCount > 0 ? <ShieldCheck size={24} /> : <CheckCircle2 size={24} />}
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-800">אזור ניהול גבאים</h3>
-              <p className="text-xs sm:text-sm text-slate-600">
-                {pendingCount > 0 ? `ישנן ${pendingCount} בקשות ממתינות` : "אין בקשות חדשות"}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-             <a href="/gabbai/approvals" className="flex-1 sm:flex-none text-center bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">אישורים</a>
-             <a href="/gabbai/content" className="flex-1 sm:flex-none text-center bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">ניהול תוכן</a>
-          </div>
-        </div>
-      )}
-
-      <section className="space-y-3">
-        <div className="flex items-center gap-2 text-slate-800 px-1">
+      {/* ===== Announcements ===== */}
+      <section className="space-y-4">
+        <h2 className="flex items-center gap-2 font-bold text-lg text-slate-800">
           <Bell size={18} className="text-blue-600" />
-          <h2 className="text-lg font-bold">לוח מודעות</h2>
-        </div>
-        <div className="grid gap-3">
-          {announcements?.length === 0 && <p className="text-slate-400 text-sm px-1">אין הודעות חדשות</p>}
-          {announcements?.map((msg) => (
-            <div key={msg.id} className={`p-4 rounded-xl border shadow-sm transition-shadow ${msg.is_pinned ? 'bg-orange-50/50 border-orange-200' : 'bg-white border-slate-100'}`}>
-              <div className="flex justify-between items-start mb-2">
-                {msg.is_pinned && <span className="bg-orange-100 text-orange-700 text-[10px] px-2 py-0.5 rounded-full font-bold">נעוץ</span>}
-                <span className="text-[10px] text-slate-400 mr-auto">{new Date(msg.created_at).toLocaleDateString('he-IL')}</span>
-              </div>
-              <h3 className="font-bold text-base text-slate-800">{msg.title}</h3>
-              <p className="text-slate-600 mt-1 text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
+          לוח מודעות
+        </h2>
+
+        {announcements?.length === 0 && (
+          <div className="bg-white border rounded-xl p-6 text-center text-slate-400">
+            אין הודעות חדשות
+          </div>
+        )}
+
+        <div className="grid gap-4">
+          {announcements?.map((a) => (
+            <div
+              key={a.id}
+              className={`rounded-2xl p-5 border shadow-sm ${
+                a.is_pinned
+                  ? "bg-orange-50 border-orange-200"
+                  : "bg-white border-slate-200"
+              }`}
+            >
+              {a.is_pinned && (
+                <span className="text-xs font-bold text-orange-700 mb-1 block">
+                  📌 נעוץ
+                </span>
+              )}
+              <h3 className="font-bold text-slate-800">{a.title}</h3>
+              <p className="text-sm text-slate-600 mt-1 whitespace-pre-line">
+                {a.content}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 text-slate-800 px-1">
-              <Clock size={18} className="text-blue-600" />
-              <h2 className="text-lg font-bold">לוח זמנים</h2>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 font-bold text-sm text-slate-600">
-                    היום ({days[today]})
-                </div>
-                <div className="p-2 space-y-1">
-                    {todaysSchedule?.length === 0 && <p className="text-center text-slate-400 text-xs py-4">אין זמנים להיום</p>}
-                    {todaysSchedule?.map((s) => (
-                        <div key={s.id} className="flex justify-between items-center p-2 hover:bg-slate-50 rounded-lg">
-                            <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                {s.type === 'class' && <BookOpen size={14} className="text-orange-500" />}
-                                {s.title}
-                            </span>
-                            <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-sm font-bold font-mono">{s.time_of_day.slice(0,5)}</span>
-                        </div>
-                    ))}
-                </div>
-                {today !== 6 && (
-                    <>
-                        <div className="bg-slate-50 px-4 py-2 border-y border-slate-200 font-bold text-sm text-slate-600 mt-2">
-                            זמני שבת קודש
-                        </div>
-                        <div className="p-2 space-y-1">
-                            {shabbatSchedule?.length === 0 && <p className="text-center text-slate-400 text-xs py-4">טרם עודכנו זמני שבת</p>}
-                            {shabbatSchedule?.map((s) => (
-                                <div key={s.id} className="flex justify-between items-center p-2 hover:bg-slate-50 rounded-lg">
-                                    <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                        <span className="text-xs text-slate-400 w-10">{days[s.day_of_week]}</span>
-                                        {s.title}
-                                    </span>
-                                    <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-sm font-bold font-mono">{s.time_of_day.slice(0,5)}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                )}
-            </div>
-          </section>
+      {/* ===== Events ===== */}
+      <section className="space-y-4">
+        <h2 className="flex items-center gap-2 font-bold text-lg text-slate-800">
+          <Calendar size={18} className="text-green-600" />
+          אירועים קרובים
+        </h2>
 
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 text-slate-800 px-1">
-              <Calendar size={18} className="text-green-600" />
-              <h2 className="text-lg font-bold">אירועים קרובים</h2>
-            </div>
-            <div className="space-y-3">
-               {communityEvents?.map((ev) => (
-                 <div key={ev.id} className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex gap-3">
-                    <div className="bg-green-50 text-green-700 p-2 rounded-lg text-center min-w-[50px] flex flex-col justify-center">
-                       <span className="text-base font-bold leading-none">{new Date(ev.start_time).getDate()}</span>
-                       <span className="text-[10px]">{new Date(ev.start_time).toLocaleString('he-IL', { month: 'short' })}</span>
-                    </div>
-                    <div>
-                       <h4 className="font-bold text-slate-800 text-sm">{ev.title}</h4>
-                       <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
-                         <MapPin size={10} /> {ev.location || 'בית הכנסת'} | {new Date(ev.start_time).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'})}
-                       </p>
-                    </div>
-                 </div>
-               ))}
-               {personalEvents?.map((event: any) => (
-                <div key={event.id} className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center">
-                   <div>
-                       <span className="text-[10px] font-bold text-blue-600 block mb-0.5">
-                         {event.event_type === 'birthday' ? 'יום הולדת' : 'שמחה משפחתית'}
-                       </span>
-                       <h3 className="font-bold text-slate-700 text-sm">{event.description}</h3>
-                   </div>
-                   <div className="text-left">
-                       <span className="text-xs font-bold text-slate-700 block">{formatGregorianDate(event.gregorian_date)}</span>
-                   </div>
+        {communityEvents?.length === 0 && personalEvents?.length === 0 && (
+          <div className="bg-white border rounded-xl p-6 text-center text-slate-400">
+            אין אירועים קרובים
+          </div>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {communityEvents?.map((ev) => (
+            <div
+              key={ev.id}
+              className="bg-white rounded-2xl p-4 border shadow-sm flex gap-4"
+            >
+              <div className="bg-green-50 text-green-700 rounded-xl px-3 py-2 text-center min-w-[60px]">
+                <div className="text-lg font-bold">
+                  {new Date(ev.start_time).getDate()}
                 </div>
-              ))}
-              {communityEvents?.length === 0 && personalEvents?.length === 0 && (
-                  <p className="text-slate-400 text-sm px-1">אין אירועים קרובים</p>
-              )}
+                <div className="text-xs">
+                  {new Date(ev.start_time).toLocaleString("he-IL", {
+                    month: "short",
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-800">{ev.title}</h4>
+                <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                  <MapPin size={10} />
+                  {ev.location || "בית הכנסת"}
+                </p>
+              </div>
             </div>
-          </section>
-      </div>
+          ))}
+
+          {personalEvents?.map((ev) => (
+            <div
+              key={ev.id}
+              className="bg-slate-50 rounded-2xl p-4 border"
+            >
+              <span className="text-xs font-bold text-blue-600">
+                {ev.event_type === "birthday" ? "🎂 יום הולדת" : "📅 אירוע"}
+              </span>
+              <p className="font-bold text-slate-800 mt-1">
+                {ev.description}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                {formatGregorianDate(ev.gregorian_date)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
     </div>
   );
 }

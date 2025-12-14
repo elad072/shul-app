@@ -1,107 +1,207 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useState } from "react";
-import { addFamilyMember, updateMember } from "./familyActions";
-import { formatForInput } from "@/lib/hebrewUtils"; // ייבוא הפונקציה
+import { useEffect, useState } from "react";
+import {
+  addFamilyMember,
+  updateFamilyMember,
+} from "./familyActions";
 
-export default function AddMemberModal({ isOpen, onClose, onSuccess, initialData }: any) {
-  const [loading, setLoading] = useState(false);
-  const isEditMode = !!initialData;
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  initialData?: any;
+  onSuccess?: () => void;
+};
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    const formData = new FormData(event.currentTarget);
-    try {
-      if (isEditMode) {
-        // בודק אם זה ראש משפחה כדי לשמור על ה-Role
-        if (initialData.role === 'head') formData.set('role', 'head');
-        await updateMember(initialData.id, formData);
-      } else {
-        await addFamilyMember(formData);
-      }
-      onSuccess(); 
-      onClose();
-    } catch (e) {
-      alert("שגיאה בשמירה");
-    } finally {
-      setLoading(false);
+export default function AddMemberModal({
+  isOpen,
+  onClose,
+  initialData,
+  onSuccess,
+}: Props) {
+  const [data, setData] = useState<any>({
+    first_name: "",
+    last_name: "",
+    role: "child",
+    gender: "male",
+    birth_date: "",
+    hebrew_birth_date: "",
+    born_after_sunset: false,
+    tribe: "israel",
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setData({
+        first_name: initialData.first_name || "",
+        last_name: initialData.last_name || "",
+        role: initialData.role || "child",
+        gender: initialData.gender || "male",
+        birth_date: initialData.birth_date || "",
+        hebrew_birth_date: initialData.hebrew_birth_date || "",
+        born_after_sunset: initialData.born_after_sunset || false,
+        tribe: initialData.tribe || "israel",
+      });
     }
-  }
+  }, [initialData]);
 
   if (!isOpen) return null;
 
-  // המרת התאריך מהדאטהבייס לפורמט שהאינפוט מבין (yyyy-mm-dd)
-  const defaultDate = initialData?.birth_date ? formatForInput(initialData.birth_date) : "";
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
+    if (initialData?.id) {
+      await updateFamilyMember(initialData.id, formData);
+    } else {
+      await addFamilyMember(formData);
+    }
+
+    onSuccess?.();
+    onClose();
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="font-bold text-lg text-slate-800">
-            {isEditMode ? "עריכת פרטים" : "הוספת בן משפחה"}
-          </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-            <X size={20} />
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+      <div className="bg-white w-full max-w-xl rounded-2xl shadow-xl p-6 space-y-6">
+
+        {/* Header */}
+        <header className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">
+            {initialData ? "עריכת בן משפחה" : "הוספת בן משפחה"}
+          </h2>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-800">
+            <X />
           </button>
-        </div>
+        </header>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">שם פרטי</label>
-            <input 
-              name="first_name" 
-              required 
-              defaultValue={initialData?.first_name || ""}
-              className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" 
-            />
-          </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
 
+          {/* שם */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">תפקיד</label>
-              <select 
-                name="role" 
-                className="w-full border border-slate-300 rounded-lg p-2 bg-white disabled:bg-slate-100 disabled:text-slate-500"
-                defaultValue={initialData?.role || "child"}
-                disabled={initialData?.role === 'head'} 
-              >
-                {initialData?.role === 'head' && <option value="head">ראש משפחה</option>}
-                <option value="spouse">אישה / בעל</option>
-                <option value="child">ילד/ה</option>
-              </select>
+              <label className="text-sm font-medium">שם פרטי</label>
+              <input
+                className="mt-1 w-full border rounded-xl p-3"
+                value={data.first_name}
+                onChange={(e) => setData({ ...data, first_name: e.target.value })}
+                required
+              />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">מין</label>
-              <select 
-                name="gender" 
-                className="w-full border border-slate-300 rounded-lg p-2 bg-white"
-                defaultValue={initialData?.gender || "male"}
+              <label className="text-sm font-medium">שם משפחה</label>
+              <input
+                className="mt-1 w-full border rounded-xl p-3"
+                value={data.last_name}
+                onChange={(e) => setData({ ...data, last_name: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* תפקיד */}
+          <div>
+            <label className="text-sm font-medium">תפקיד במשפחה</label>
+            <select
+              className="mt-1 w-full border rounded-xl p-3"
+              value={data.role}
+              onChange={(e) => setData({ ...data, role: e.target.value })}
+            >
+              <option value="head">אב משפחה</option>
+              <option value="spouse">בן / בת זוג</option>
+              <option value="child">ילד / ילדה</option>
+            </select>
+          </div>
+
+          {/* מין ושבט */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">מין</label>
+              <select
+                className="mt-1 w-full border rounded-xl p-3"
+                value={data.gender}
+                onChange={(e) => setData({ ...data, gender: e.target.value })}
               >
                 <option value="male">זכר</option>
                 <option value="female">נקבה</option>
               </select>
             </div>
+
+            <div>
+              <label className="text-sm font-medium">שבט</label>
+              <select
+                className="mt-1 w-full border rounded-xl p-3"
+                value={data.tribe}
+                onChange={(e) => setData({ ...data, tribe: e.target.value })}
+              >
+                <option value="israel">ישראל</option>
+                <option value="kohen">כהן</option>
+                <option value="levi">לוי</option>
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">תאריך לידה (לועזי)</label>
-            <input 
-              name="birth_date" 
-              type="date" 
-              defaultValue={defaultDate} // שימוש בערך המפורמט
-              className="w-full border border-slate-300 rounded-lg p-2" 
+          {/* תאריכי לידה */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">תאריך לידה (לועזי)</label>
+              <input
+                type="date"
+                className="mt-1 w-full border rounded-xl p-3"
+                value={data.birth_date}
+                onChange={(e) => setData({ ...data, birth_date: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">תאריך עברי</label>
+              <input
+                className="mt-1 w-full border rounded-xl p-3"
+                placeholder="י״ב ניסן"
+                value={data.hebrew_birth_date}
+                onChange={(e) =>
+                  setData({ ...data, hebrew_birth_date: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          {/* אחרי שקיעה */}
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={data.born_after_sunset}
+              onChange={(e) =>
+                setData({ ...data, born_after_sunset: e.target.checked })
+              }
             />
-          </div>
+            נולד אחרי השקיעה
+          </label>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 mt-2"
-          >
-            {loading ? "שומר..." : "שמור שינויים"}
-          </button>
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl border"
+            >
+              ביטול
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 rounded-xl bg-blue-600 text-white font-bold"
+            >
+              שמירה
+            </button>
+          </div>
         </form>
       </div>
     </div>
