@@ -1,13 +1,15 @@
 import { createSupabaseServer } from "@/lib/supabase/server";
 
 export async function auth() {
-  const supabase = createSupabaseServer();
+  // 👇 שים לב! חובה להוסיף את המילה await כאן:
+  const supabase = await createSupabaseServer();
+  // 👆 אם תמחק את ה-await הזה, השגיאה תחזור.
 
-  // ❗ במקום getUser → חייבים getSession ב־Next.js 16
-  const { data, error } = await supabase.auth.getSession();
+  // עכשיו הקוד הזה יעבוד:
+  const { data: sessionData, error } = await supabase.auth.getSession();
 
   return {
-    user: data?.session?.user ?? null,
+    user: sessionData?.session?.user ?? null,
     error
   };
 }

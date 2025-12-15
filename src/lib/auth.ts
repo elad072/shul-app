@@ -1,13 +1,15 @@
+// שים לב! אנחנו מייבאים מהקובץ הספציפי בתוך התיקייה
 import { createSupabaseServer } from "@/lib/supabase/server";
 
 export async function auth() {
-  const supabase = createSupabaseServer();
+  // 1. יוצרים את הלקוח עם await
+  const supabase = await createSupabaseServer();
 
-  // SSR → חייב getSession()
-  const { data: sessionData, error } = await supabase.auth.getSession();
+  // 2. עכשיו שהלקוח מוכן, אפשר לקרוא ל-getSession
+  const { data, error } = await supabase.auth.getSession();
 
   return {
-    user: sessionData?.session?.user ?? null,
-    error
+    user: data?.session?.user ?? null,
+    error,
   };
 }
