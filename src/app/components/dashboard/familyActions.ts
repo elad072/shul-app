@@ -117,7 +117,12 @@ export async function addFamilyEvent(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const gregorian_date = formData.get("event_date") as string;
+  // ✅ תיקון קריטי – שם השדה הנכון
+  const gregorian_date = formData.get("gregorian_date") as string;
+
+  if (!gregorian_date) {
+    throw new Error("Missing gregorian_date");
+  }
 
   const parts = getHebrewDateParts(gregorian_date);
 
@@ -132,11 +137,19 @@ export async function addFamilyEvent(formData: FormData) {
   });
 
   revalidatePath("/dashboard/family");
+  revalidatePath("/dashboard/events");
 }
 
 export async function updateFamilyEvent(id: string, formData: FormData) {
   const supabase = await getSupabase();
-  const gregorian_date = formData.get("event_date") as string;
+
+  // ✅ תיקון קריטי – שם השדה הנכון
+  const gregorian_date = formData.get("gregorian_date") as string;
+
+  if (!gregorian_date) {
+    throw new Error("Missing gregorian_date");
+  }
+
   const parts = getHebrewDateParts(gregorian_date);
 
   await supabase
@@ -151,10 +164,19 @@ export async function updateFamilyEvent(id: string, formData: FormData) {
     .eq("id", id);
 
   revalidatePath("/dashboard/family");
+  revalidatePath("/dashboard/events");
 }
-
 export async function deleteFamilyEvent(id: string) {
   const supabase = await getSupabase();
-  await supabase.from("personal_events").delete().eq("id", id);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await supabase
+    .from("personal_events")
+    .delete()
+    .eq("id", id)
+    .eq("created_by", user.id);
+
   revalidatePath("/dashboard/family");
+  revalidatePath("/dashboard/events");
 }

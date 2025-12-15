@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image"; // ייבוא רכיב תמונה
 import { usePathname, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
+import { Calendar } from "lucide-react";
+
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -58,7 +60,16 @@ export default function Sidebar() {
           href="/dashboard/family" 
           active={pathname === "/dashboard/family"} 
         />
+
+        <SidebarItem 
+  icon={<Calendar size={20} />} 
+  label="אירועים אישיים" 
+  href="/dashboard/events" 
+  active={pathname === "/dashboard/events"} 
+/>
+
       </div>
+
 
       <div className="p-4 border-t border-slate-100">
         <SidebarItem 

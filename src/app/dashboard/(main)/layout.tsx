@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { headers } from "next/headers";
@@ -17,17 +19,24 @@ export default async function DashboardLayout({
 
   const isFamilyPage = pathname.startsWith("/dashboard/family");
 
+console.log("ENV CHECK", {
+  url: process.env.SUPABASE_URL,
+  key: process.env.SUPABASE_ANON_KEY?.slice(0, 10),
+});
+
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!,
+  {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
       },
-    }
-  );
+    },
+  }
+);
+
 
   const {
     data: { user },

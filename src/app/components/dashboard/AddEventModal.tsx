@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { addFamilyEvent, updateFamilyEvent } from "./familyActions";
+import { formatForInput } from "@/lib/hebrewUtils";
 
 type Props = {
   isOpen: boolean;
@@ -23,18 +24,22 @@ export default function AddEventModal({
   const [description, setDescription] = useState("");
   const [gregorianDate, setGregorianDate] = useState("");
 
-  /* sync edit mode */
   useEffect(() => {
+    // אם המודאל סגור, לא נוגעים
+    if (!isOpen) return;
+
     if (initialData) {
+      // EDIT: טוענים נתונים
       setEventType(initialData.event_type || "birthday");
       setDescription(initialData.description || "");
-      setGregorianDate(initialData.gregorian_date || "");
+      setGregorianDate(formatForInput(initialData.gregorian_date));
     } else {
+      // ADD: איפוס מוחלט
       setEventType("birthday");
       setDescription("");
       setGregorianDate("");
     }
-  }, [initialData]);
+  }, [isOpen, member?.id, initialData?.id]); // חשוב!
 
   if (!isOpen || !member) return null;
 
@@ -60,8 +65,6 @@ export default function AddEventModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6 space-y-6">
-
-        {/* Header */}
         <header className="flex justify-between items-center">
           <h2 className="text-xl font-bold">
             {initialData ? "עריכת אירוע" : "הוספת אירוע"}
@@ -71,9 +74,7 @@ export default function AddEventModal({
           </button>
         </header>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <div>
             <label className="text-sm font-medium">סוג אירוע</label>
             <select
@@ -110,11 +111,7 @@ export default function AddEventModal({
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl border"
-            >
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl border">
               ביטול
             </button>
             <button
