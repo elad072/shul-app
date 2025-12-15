@@ -1,21 +1,40 @@
 "use client";
 
-import { Home, Users, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Home, Users, LogOut, Calendar, ShieldAlert } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; // ייבוא רכיב תמונה
+import Image from "next/image"; 
 import { usePathname, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import { Calendar } from "lucide-react";
-
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [isGabbai, setIsGabbai] = useState(false); // בדיקת סטטוס גבאי
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+
+  // בדיקת הרשאות בטעינת הקומפוננטה
+  useEffect(() => {
+    async function checkGabbaiStatus() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("is_gabbai")
+          .eq("id", user.id)
+          .single();
+        
+        if (data?.is_gabbai) {
+          setIsGabbai(true);
+        }
+      }
+    }
+    checkGabbaiStatus();
+  }, [supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -24,12 +43,11 @@ export default function Sidebar() {
   };
 
   return (
-    <nav className="flex flex-col h-full bg-white text-slate-600">
+    <nav className="flex flex-col h-full bg-white text-slate-600 font-sans shadow-sm">
       
       {/* אזור הלוגו */}
       <div className="p-6 border-b border-slate-100 flex flex-col items-center text-center">
         <div className="relative w-20 h-20 mb-3">
-           {/* כאן נכנסת התמונה ששמרת בתיקיית public */}
            <Image 
              src="/logo.png" 
              alt="לוגו מעון קודשך" 
@@ -46,7 +64,9 @@ export default function Sidebar() {
         </p>
       </div>
 
+      {/* תפריט ניווט */}
       <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+        
         <SidebarItem 
           icon={<Home size={20} />} 
           label="דף הבית" 
@@ -62,15 +82,34 @@ export default function Sidebar() {
         />
 
         <SidebarItem 
-  icon={<Calendar size={20} />} 
-  label="אירועים אישיים" 
-  href="/dashboard/events" 
-  active={pathname === "/dashboard/events"} 
-/>
+          icon={<Calendar size={20} />} 
+          label="אירועים אישיים" 
+          href="/dashboard/events" 
+          active={pathname === "/dashboard/events"} 
+        />
+
+        {/* תצוגה מותנית לגבאי בלבד */}
+        {isGabbai && (
+          <>
+            <div className="my-3 border-t border-slate-100 mx-2"></div>
+            
+            <div className="px-3 text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">
+              ניהול
+            </div>
+
+            <SidebarItem 
+              icon={<ShieldAlert size={20} />} 
+              label="אזור גבאי" 
+              href="/gabbai" 
+              active={pathname.startsWith("/gabbai")}
+              special // עיצוב מיוחד לגבאי
+            />
+          </>
+        )}
 
       </div>
 
-
+      {/* כפתור יציאה */}
       <div className="p-4 border-t border-slate-100">
         <SidebarItem 
           icon={<LogOut size={20} />} 
@@ -83,31 +122,52 @@ export default function Sidebar() {
   );
 }
 
-function SidebarItem({ icon, label, href, onClick, active = false, danger = false }: any) {
+// קומפוננטת עזר
+function SidebarItem({ icon, label, href, onClick, active = false, danger = false, special = false }: any) {
+  
+  // לוגיקה לצבעים
+  let activeClass = "";
+  let inactiveClass = "";
+  let iconColor = "";
+
+  if (danger) {
+    inactiveClass = "text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100 mt-2";
+    iconColor = "text-red-500";
+  } else if (special) {
+    // עיצוב מיוחד לכפתור גבאי
+    activeClass = "bg-amber-50 text-amber-700 shadow-sm border border-amber-200 font-bold";
+    inactiveClass = "text-slate-600 hover:bg-amber-50 hover:text-amber-700";
+    iconColor = active ? "text-amber-600" : "text-amber-500";
+  } else {
+    // עיצוב רגיל
+    activeClass = "bg-blue-50 text-blue-700 shadow-sm border border-blue-100 font-bold";
+    inactiveClass = "text-slate-600 hover:bg-slate-50 hover:text-slate-900";
+    iconColor = active ? "text-blue-600" : "text-slate-400";
+  }
+
   const baseClasses = `
-    flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 font-medium text-sm w-full cursor-pointer
-    ${active 
-      ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100" 
-      : "hover:bg-slate-50 text-slate-600 hover:text-slate-900"
-    }
-    ${danger ? "text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100 mt-2" : ""}
+    flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm w-full cursor-pointer
+    ${active ? activeClass : inactiveClass}
   `;
 
-  const iconClass = active ? "text-blue-600" : (danger ? "text-red-500" : "text-slate-400");
+  const content = (
+    <>
+      <span className={iconColor}>{icon}</span>
+      <span>{label}</span>
+    </>
+  );
 
   if (onClick) {
     return (
       <button onClick={onClick} className={baseClasses}>
-        <span className={iconClass}>{icon}</span>
-        <span>{label}</span>
+        {content}
       </button>
     );
   }
 
   return (
     <Link href={href || "#"} className={baseClasses}>
-      <span className={iconClass}>{icon}</span>
-      <span>{label}</span>
+      {content}
     </Link>
   );
 }

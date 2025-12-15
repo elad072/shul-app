@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { approveUser, rejectUser } from "./actions";
+import Sidebar from "../../components/dashboard/Sidebar";
 
 export default async function GabbaiApprovalsPage() {
   const cookieStore = await cookies();

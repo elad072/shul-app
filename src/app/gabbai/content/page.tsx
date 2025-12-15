@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import GabbaiTabs from "./GabbaiTabs";
 
+
+
 export default async function GabbaiContentPage() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -70,21 +72,7 @@ export default async function GabbaiContentPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <a
-              href="/gabbai/message-builder"
-              className="inline-flex items-center justify-center bg-green-600 text-white px-6 py-3 rounded-2xl font-bold shadow hover:bg-green-700 transition"
-            >
-              📢 שליחת הודעה לקהילה
-            </a>
-
-            <a
-              href="/dashboard"
-              className="inline-flex items-center justify-center bg-white border px-6 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition"
-            >
-              חזרה לדשבורד
-            </a>
-          </div>
+          
         </div>
       </div>
 
