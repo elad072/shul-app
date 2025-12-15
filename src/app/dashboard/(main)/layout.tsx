@@ -1,8 +1,7 @@
-
-
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation"; // הוספתי הפניה למקרה שאין משתמש
 
 import Sidebar from "../../components/dashboard/Sidebar";
 import FamilyPanel from "../../components/dashboard/FamilyPanel";
@@ -19,24 +18,33 @@ export default async function DashboardLayout({
 
   const isFamilyPage = pathname.startsWith("/dashboard/family");
 
-console.log("ENV CHECK", {
-  url: process.env.SUPABASE_URL,
-  key: process.env.SUPABASE_ANON_KEY?.slice(0, 10),
-});
-
+  // בדיקה בקונסול - ב-Vercel תראה את זה בלוגים
+  console.log("ENV CHECK", {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL ? "Exists" : "Missing",
+    key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "Exists" : "Missing",
+  });
 
   const supabase = createServerClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!,
-  {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // ה-try/catch נדרש כי ב-Server Component (כמו Layout)
+            // אי אפשר לכתוב עוגיות, אבל הפונקציה חייבת להיות קיימת
+          }
+        },
       },
-    },
-  }
-);
-
+    }
+  );
 
   const {
     data: { user },

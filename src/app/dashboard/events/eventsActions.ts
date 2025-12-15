@@ -4,12 +4,21 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function getAllEventsByMember() {
+  const cookieStore = await cookies(); // חובה לחכות ל-await
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies }
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+      },
+    }
   );
 
+  // שלב אבחון: נסה להבין אם הבעיה בשליפה או בחיבור
   const { data, error } = await supabase
     .from("members")
     .select(`
@@ -23,8 +32,13 @@ export async function getAllEventsByMember() {
         gregorian_date
       )
     `)
+    // הוספתי הזמנה לוגית
     .order("last_name");
 
-  if (error) return [];
+  if (error) {
+    console.error("Supabase Error:", error);
+    return [];
+  }
+
   return data;
 }
