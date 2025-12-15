@@ -1,7 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation"; // הוספתי הפניה למקרה שאין משתמש
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import Sidebar from "../../components/dashboard/Sidebar";
 import FamilyPanel from "../../components/dashboard/FamilyPanel";
@@ -13,46 +12,39 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
+  
+  // הוספת ה-header הזה דורשת middleware כפי שדיברנו קודם.
+  // אם אין לך middleware, ה-isFamilyPage עלול לא לעבוד בצד שרת.
   const headerList = await headers();
   const pathname = headerList.get("x-pathname") || "";
-
   const isFamilyPage = pathname.startsWith("/dashboard/family");
-
-  // בדיקה בקונסול - ב-Vercel תראה את זה בלוגים
-  console.log("ENV CHECK", {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL ? "Exists" : "Missing",
-    key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "Exists" : "Missing",
-  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
+        getAll() { return cookieStore.getAll(); },
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             );
-          } catch {
-            // ה-try/catch נדרש כי ב-Server Component (כמו Layout)
-            // אי אפשר לכתוב עוגיות, אבל הפונקציה חייבת להיות קיימת
-          }
+          } catch {}
         },
       },
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/sign-in");
+  }
 
   let members: any[] = [];
 
-  if (user && !isFamilyPage) {
+  if (!isFamilyPage) {
     const { data } = await supabase
       .from("members")
       .select("*")
@@ -63,24 +55,26 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-[#F8FAFC]"> {/* צבע רקע טיפה יותר מודרני מ-slate-50 רגיל */}
 
-      {/* Sidebar ימין */}
-      <aside className="w-64 bg-white border-l border-slate-200 hidden lg:flex">
+      {/* Sidebar ימין - קבוע */}
+      <aside className="hidden lg:flex flex-col w-64 bg-white border-l border-slate-200/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30">
         <Sidebar />
       </aside>
 
       {/* תוכן מרכזי */}
-      <main className="flex-1 overflow-y-auto relative">
-        <div className="max-w-6xl mx-auto p-6 pb-24">
+      <main className="flex-1 overflow-y-auto relative scroll-smooth">
+        <div className="max-w-7xl mx-auto p-4 md:p-8 pb-32 lg:pb-12">
           {children}
         </div>
+        
+        {/* תפריט נייד */}
         <MobileTabs />
       </main>
 
-      {/* Family Panel – רק אם לא בדף משפחה */}
+      {/* Family Panel – צד שמאל, רחב יותר ומעוצב */}
       {!isFamilyPage && (
-        <aside className="hidden xl:flex w-[26rem] bg-white border-r border-slate-200">
+        <aside className="hidden xl:flex flex-col w-80 bg-white border-r border-slate-200/60 shadow-[-4px_0_24px_rgba(0,0,0,0.02)] z-20 overflow-y-auto">
           <FamilyPanel members={members} />
         </aside>
       )}

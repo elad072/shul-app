@@ -400,6 +400,6 @@ function typeLabel(type: string) {
 function EventIcon({ type, size = 20 }: { type: string, size?: number }) {
   if (type === "birthday") return <Gift size={size} />;
   if (type === "anniversary") return <Heart size={size} />;
-  if (type === "yahrzeit") return <Candle size={size} />;
+  if (type === "yahrzeit") return <Flame size={size} />;
   return <Clock size={size} />;
 }
