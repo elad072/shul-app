@@ -16,21 +16,48 @@ export function MobileTabs() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // בדיקה האם המשתמש הוא גבאי
   useEffect(() => {
-    async function checkRole() {
+    // פונקציה לבדיקת הרשאות
+    const checkRole = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("is_gabbai")
-          .eq("id", user.id)
-          .single();
-        if (data?.is_gabbai) setIsGabbai(true);
+      
+      if (!user) {
+        console.log("MobileTabs: No user found");
+        setIsGabbai(false);
+        return;
       }
-    }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("is_gabbai")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("MobileTabs Error:", error);
+      }
+
+      if (data?.is_gabbai) {
+        console.log("MobileTabs: User is Gabbai ✅");
+        setIsGabbai(true);
+      } else {
+        console.log("MobileTabs: User is NOT Gabbai ❌");
+        setIsGabbai(false);
+      }
+    };
+
+    // 1. בדיקה ראשונית
     checkRole();
-  }, []);
+
+    // 2. האזנה לשינויים בהתחברות (למקרה שהמשתמש התחבר כרגע)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkRole();
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
