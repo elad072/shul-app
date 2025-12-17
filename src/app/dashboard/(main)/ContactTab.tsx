@@ -302,7 +302,7 @@ function CreateRequestForm({ userId, onCancel, onSuccess, subjects }: any) {
     );
 }
 
-function ChatView({ userId, requestId, onBack, onRead }: any) { Read }: any) {
+function ChatView({ userId, requestId, onBack, onRead }: any) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [loading, setLoading] = useState(true);
@@ -443,14 +443,15 @@ function ChatView({ userId, requestId, onBack, onRead }: any) { Read }: any) {
                         className="flex-1 bg-transparent px-3 py-3 text-base focus:outline-none min-w-0 placeholder:text-slate-400 resize-none max-h-[120px]"
                         style={{ minHeight: '44px' }}
                     />
-                    onClick={handleSend}
-                    disabled={sending || !newMessage.trim()}
-                    className="w-11 h-11 mb-0.5 bg-blue-600 text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:bg-slate-300 shadow-lg shadow-blue-200 transition-transform active:scale-95"
+                    <button
+                        onClick={handleSend}
+                        disabled={sending || !newMessage.trim()}
+                        className="w-11 h-11 mb-0.5 bg-blue-600 text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:bg-slate-300 shadow-lg shadow-blue-200 transition-transform active:scale-95"
                     >
-                    {sending ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
-                </button>
+                        {sending ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
+                    </button>
+                </div>
             </div>
         </div>
-        </div >
     );
 }
