@@ -55,8 +55,8 @@ export default function GabbaiTabs({ announcements, events, schedules }: any) {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+              ? "bg-white text-blue-600 shadow-sm"
+              : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
               }`}
           >
             {tab.icon} {tab.label}
@@ -80,22 +80,63 @@ export default function GabbaiTabs({ announcements, events, schedules }: any) {
       {/* Content Lists */}
       <div className="space-y-4">
         {activeTab === "schedules" && (
-          schedules.length > 0 ? schedules.map((s: any) => (
-            <div key={s.id} className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4">
-                <div className="bg-blue-50 text-blue-600 p-3 rounded-xl"><Clock size={20} /></div>
-                <div>
-                  <div className="font-bold text-slate-900 text-lg">{s.title}</div>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                    <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-700">{s.time_of_day.slice(0, 5)}</span>
-                    <span>•</span>
-                    <span>{s.day_of_week === null ? "כל יום" : ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"][s.day_of_week]}</span>
-                  </div>
-                </div>
+          (() => {
+            const currentDay = new Date().getDay();
+            const groupedSchedules: Record<string, any[]> = {};
+
+            // Group by day
+            schedules.forEach((s: any) => {
+              const key = s.day_of_week === null ? 'daily' : s.day_of_week.toString();
+              if (!groupedSchedules[key]) groupedSchedules[key] = [];
+              groupedSchedules[key].push(s);
+            });
+
+            // Sort keys: daily first, then from today onwards
+            const sortedKeys = Object.keys(groupedSchedules).sort((a, b) => {
+              if (a === 'daily') return -1;
+              if (b === 'daily') return 1;
+              const dayA = (parseInt(a) - currentDay + 7) % 7;
+              const dayB = (parseInt(b) - currentDay + 7) % 7;
+              return dayA - dayB;
+            });
+
+            if (sortedKeys.length === 0) return <EmptyState text="לא הוגדרו זמנים" />;
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedKeys.map(key => {
+                  const isDaily = key === 'daily';
+                  const label = isDaily ? "זמנים קבועים" : days[parseInt(key)];
+                  const items = groupedSchedules[key].sort((a, b) => a.time_of_day.localeCompare(b.time_of_day));
+                  const isToday = !isDaily && parseInt(key) === currentDay;
+
+                  return (
+                    <div key={key} className={`bg-white border rounded-2xl p-5 shadow-sm h-fit ${isToday ? 'border-blue-200 ring-4 ring-blue-50/50' : 'border-slate-200'}`}>
+                      <h3 className={`font-bold text-lg mb-4 flex items-center gap-2 ${isToday ? 'text-blue-700' : 'text-slate-800'}`}>
+                        {isDaily ? <Clock size={20} className="text-blue-500" /> : <Calendar size={20} className={isToday ? "text-blue-500" : "text-slate-400"} />}
+                        {label}
+                        {isToday && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full mr-auto">היום</span>}
+                      </h3>
+
+                      <div className="space-y-3">
+                        {items.map((s: any) => (
+                          <div key={s.id} className="group flex items-start justify-between p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
+                            <div>
+                              <div className="font-bold text-slate-800">{s.title}</div>
+                              <div className="text-sm text-slate-500 font-mono mt-0.5">{s.time_of_day.slice(0, 5)}</div>
+                            </div>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Actions onEdit={() => openModal(s)} onDelete={() => handleDelete(s.id, "schedule")} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <Actions onEdit={() => openModal(s)} onDelete={() => handleDelete(s.id, "schedule")} />
-            </div>
-          )) : <EmptyState text="לא הוגדרו זמנים" />
+            );
+          })()
         )}
 
         {activeTab === "announcements" && (

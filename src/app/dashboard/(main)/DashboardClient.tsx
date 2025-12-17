@@ -189,12 +189,19 @@ export default function DashboardClient({
                 <button onClick={() => setActiveTab("prayers")} className="text-xs text-blue-600 font-bold">הכל</button>
               </div>
               <div className="space-y-3">
-                {schedules.slice(0, 3).map((s) => (
-                  <div key={s.id} className="flex justify-between items-center text-sm border-b border-slate-50 pb-2 last:border-0">
-                    <span className="text-slate-600">{s.title}</span>
-                    <span className="font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg">{s.time_of_day.slice(0, 5)}</span>
-                  </div>
-                ))}
+                {schedules
+                  .filter((s: any) => s.day_of_week === null || s.day_of_week === new Date().getDay())
+                  .sort((a: any, b: any) => a.time_of_day.localeCompare(b.time_of_day))
+                  .slice(0, 3)
+                  .map((s: any) => (
+                    <div key={s.id} className="flex justify-between items-center text-sm border-b border-slate-50 pb-2 last:border-0">
+                      <span className="text-slate-600">{s.title}</span>
+                      <span className="font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg">{s.time_of_day.slice(0, 5)}</span>
+                    </div>
+                  ))}
+                {schedules.filter((s: any) => s.day_of_week === null || s.day_of_week === new Date().getDay()).length === 0 && (
+                  <p className="text-sm text-slate-400 text-center py-2">אין זמנים להיום</p>
+                )}
               </div>
             </div>
 
@@ -233,23 +240,59 @@ export default function DashboardClient({
 
         {/* --- Tab 2: Prayers --- */}
         {activeTab === "prayers" && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="divide-y divide-slate-100">
-              {schedules.map((s) => (
-                <div key={s.id} className="p-4 flex items-center justify-between">
-                  <div>
-                    <div className="font-bold text-slate-700">{s.title}</div>
-                    <div className="text-xs text-slate-400">
-                      {s.day_of_week === null ? "כל יום" : ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"][s.day_of_week]}
+          (() => {
+            const currentDay = new Date().getDay();
+            const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+            const groupedSchedules: Record<string, any[]> = {};
+
+            // Group by day
+            schedules.forEach((s: any) => {
+              const key = s.day_of_week === null ? 'daily' : s.day_of_week.toString();
+              if (!groupedSchedules[key]) groupedSchedules[key] = [];
+              groupedSchedules[key].push(s);
+            });
+
+            // Sort keys: daily first, then from today onwards
+            const sortedKeys = Object.keys(groupedSchedules).sort((a, b) => {
+              if (a === 'daily') return -1;
+              if (b === 'daily') return 1;
+              const dayA = (parseInt(a) - currentDay + 7) % 7;
+              const dayB = (parseInt(b) - currentDay + 7) % 7;
+              return dayA - dayB;
+            });
+
+            if (sortedKeys.length === 0) return <div className="text-center py-10 text-slate-400">לא הוגדרו זמנים</div>;
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sortedKeys.map(key => {
+                  const isDaily = key === 'daily';
+                  const label = isDaily ? "זמנים קבועים" : days[parseInt(key)];
+                  const items = groupedSchedules[key].sort((a, b) => a.time_of_day.localeCompare(b.time_of_day));
+                  const isToday = !isDaily && parseInt(key) === currentDay;
+
+                  return (
+                    <div key={key} className={`bg-white rounded-3xl border p-5 shadow-sm h-fit ${isToday ? 'border-blue-200 ring-4 ring-blue-50/50' : 'border-slate-100'}`}>
+                      <h3 className={`font-bold text-lg mb-4 flex items-center gap-2 ${isToday ? 'text-blue-700' : 'text-slate-800'}`}>
+                        {isDaily ? <Clock size={20} className="text-blue-500" /> : <Calendar size={20} className={isToday ? "text-blue-500" : "text-slate-400"} />}
+                        {label}
+                        {isToday && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full mr-auto">היום</span>}
+                      </h3>
+
+                      <div className="space-y-3">
+                        {items.map((s: any) => (
+                          <div key={s.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0 last:pb-0">
+                            <div className="font-bold text-slate-700">{s.title}</div>
+                            <div className="font-mono text-slate-500 bg-slate-50 px-2 py-1 rounded-lg text-sm">{s.time_of_day.slice(0, 5)}</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-lg font-bold text-slate-800 bg-slate-50 px-3 py-1 rounded-xl">
-                    {s.time_of_day.slice(0, 5)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                  );
+                })}
+              </div>
+            );
+          })()
         )}
 
         {/* --- Tab 3: Board --- */}
