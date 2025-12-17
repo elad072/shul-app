@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-ShieldCheck,
+import {
+  ShieldCheck,
   MessageCircle,
   FileText,
   Users,
