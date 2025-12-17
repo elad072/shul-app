@@ -40,18 +40,72 @@ export async function middleware(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Protected routes require authentication
-    if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
-        return NextResponse.redirect(new URL("/sign-in", request.url));
+    const path = request.nextUrl.pathname;
+
+    // 1. Authenticated User Logic
+    if (user) {
+        // Fetch profile status
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("status, onboarding_completed, is_gabbai")
+            .eq("id", user.id)
+            .single();
+
+        // Safety check: if no profile found (rare), maybe let them pass or sign out?
+        // We'll proceed only if we have profile data to check against.
+        if (profile) {
+
+            // A. Gabbai Protection (Strict)
+            if (path.startsWith("/gabbai") && !profile.is_gabbai) {
+                return NextResponse.redirect(new URL("/dashboard", request.url));
+            }
+
+            // B. Onboarding Check
+            if (!profile.onboarding_completed) {
+                if (!path.startsWith("/onboarding")) {
+                    return NextResponse.redirect(new URL("/onboarding", request.url));
+                }
+                // Allow access to /onboarding
+                return response;
+            }
+
+            // C. Pending / Rejected Check (Only if onboarding is done)
+            if (profile.status === 'pending_approval') {
+                if (!path.startsWith("/pending")) {
+                    // Start Logout if they try to go elsewhere? Or just gate them?
+                    // Redirecting to pending is safer.
+                    return NextResponse.redirect(new URL("/pending", request.url));
+                }
+                return response;
+            }
+
+            if (profile.status === 'rejected') {
+                if (!path.startsWith("/rejected")) {
+                    return NextResponse.redirect(new URL("/rejected", request.url));
+                }
+                return response;
+            }
+
+            // D. Active User Cleanup
+            // If user is active/completed, they shouldn't be on these pages:
+            if (path.startsWith("/sign-in") || path.startsWith("/onboarding") || path.startsWith("/pending") || path.startsWith("/rejected")) {
+                return NextResponse.redirect(new URL("/dashboard", request.url));
+            }
+        }
     }
 
-    if (!user && request.nextUrl.pathname.startsWith("/gabbai")) {
-        return NextResponse.redirect(new URL("/sign-in", request.url));
-    }
-
-    // If user is signed in and tries to access sign-in, redirect to dashboard
-    if (user && request.nextUrl.pathname.startsWith("/sign-in")) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+    // 2. Unauthenticated User Logic
+    if (!user) {
+        // Protect private routes
+        if (
+            path.startsWith("/dashboard") ||
+            path.startsWith("/gabbai") ||
+            path.startsWith("/onboarding") ||
+            path.startsWith("/pending") ||
+            path.startsWith("/rejected")
+        ) {
+            return NextResponse.redirect(new URL("/sign-in", request.url));
+        }
     }
 
     return response;
