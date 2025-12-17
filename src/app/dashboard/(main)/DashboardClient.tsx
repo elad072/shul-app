@@ -48,6 +48,7 @@ export default function DashboardClient({
   }, []);
 
   const checkUnread = async () => {
+    if (!profile?.id) return;
     const { data } = await supabase.rpc('get_unread_count', { user_uuid: profile.id });
     setUnreadCount(data || 0);
   };
@@ -71,7 +72,7 @@ export default function DashboardClient({
               </div>
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2 tracking-tight">
-                  שלום, {profile?.first_name} <span className="animate-pulse">👋</span>
+                  שלום, {profile?.member?.first_name || profile?.first_name} <span className="animate-pulse">👋</span>
                 </h1>
                 <p className="text-blue-100/80 text-sm font-medium flex items-center gap-1.5">
                   <Sparkles size={14} className="text-amber-300" /> ברוכים הבאים

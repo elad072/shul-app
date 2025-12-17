@@ -20,6 +20,9 @@ export default function AddMemberModal({
   initialData,
   onSuccess,
 }: Props) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [data, setData] = useState<any>({
     first_name: "",
     last_name: "",
@@ -28,7 +31,7 @@ export default function AddMemberModal({
     birth_date: "",
     hebrew_birth_date: "",
     born_after_sunset: false,
-    tribe: "israel",
+    tribe: "yisrael",
   });
 
   useEffect(() => {
@@ -41,7 +44,7 @@ export default function AddMemberModal({
         birth_date: initialData.birth_date || "",
         hebrew_birth_date: initialData.hebrew_birth_date || "",
         born_after_sunset: initialData.born_after_sunset || false,
-        tribe: initialData.tribe || "israel",
+        tribe: initialData.tribe || "yisrael",
       });
     }
   }, [initialData]);
@@ -50,22 +53,31 @@ export default function AddMemberModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
+    try {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+
+      if (initialData?.id) {
+        await updateFamilyMember(initialData.id, formData);
+      } else {
+        await addFamilyMember(formData);
       }
-    });
 
-    if (initialData?.id) {
-      await updateFamilyMember(initialData.id, formData);
-    } else {
-      await addFamilyMember(formData);
+      onSuccess?.();
+      onClose();
+    } catch (err: any) {
+      console.error("Error submitting member:", err);
+      setError(err.message || "שגיאה בשמירת הנתונים");
+    } finally {
+      setLoading(false);
     }
-
-    onSuccess?.();
-    onClose();
   }
 
   return (
@@ -142,7 +154,7 @@ export default function AddMemberModal({
                 value={data.tribe}
                 onChange={(e) => setData({ ...data, tribe: e.target.value })}
               >
-                <option value="israel">ישראל</option>
+                <option value="yisrael">ישראל</option>
                 <option value="kohen">כהן</option>
                 <option value="levi">לוי</option>
               </select>
@@ -186,19 +198,28 @@ export default function AddMemberModal({
             נולד אחרי השקיעה
           </label>
 
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100">
+              {error}
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 rounded-xl border"
+              disabled={loading}
             >
               ביטול
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-xl bg-blue-600 text-white font-bold"
+              className="px-6 py-2 rounded-xl bg-blue-600 text-white font-bold disabled:opacity-50 flex items-center gap-2"
+              disabled={loading}
             >
+              {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
               שמירה
             </button>
           </div>

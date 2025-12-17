@@ -97,19 +97,13 @@ export default function Sidebar() {
           active={pathname === "/dashboard/family"}
         />
 
-
-        <SidebarItem
-          icon={<UserCog size={20} />}
-          label="הגדרות אפליקציה"
-          href="/gabbai/settings"
-          active={pathname === "/gabbai/settings"}
-        />
         <SidebarItem
           icon={<Calendar size={20} />}
           label="ניהול תוכן וזמנים"
           href="/dashboard/events"
           active={pathname === "/dashboard/events"}
         />
+
 
         {/* תצוגה מותנית לגבאי בלבד */}
         {isGabbai && (
@@ -124,7 +118,14 @@ export default function Sidebar() {
               icon={<ShieldAlert size={20} />}
               label="אזור גבאי"
               href="/gabbai"
-              active={pathname.startsWith("/gabbai") && pathname !== "/gabbai/messages" && pathname !== "/gabbai/settings"}
+              active={pathname === "/gabbai"}
+              special
+            />
+            <SidebarItem
+              icon={<UserCog size={20} />}
+              label="הגדרות אפליקציה"
+              href="/gabbai/settings"
+              active={pathname === "/gabbai/settings"}
               special
             />
             <SidebarItem

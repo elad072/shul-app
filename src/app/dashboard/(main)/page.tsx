@@ -19,7 +19,7 @@ export default async function Dashboard() {
   // 1. נתוני פרופיל (Blocking - we need this for 4)
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*")
+    .select("*, member:members(*)")
     .eq("id", user.id)
     .single();
 

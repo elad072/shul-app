@@ -31,17 +31,22 @@ export function MobileTabs() {
         .from("profiles")
         .select("is_gabbai")
         .eq("id", user.id)
-        .single();
+        .maybeSingle(); // Switch to maybeSingle to avoid error on 0 rows
 
       if (error) {
-        console.error("MobileTabs Error:", error);
+        // Ignore "Row not found" which is expected for new users / deleted profiles
+        if (error.code !== 'PGRST116') {
+          console.error("MobileTabs Profile Check Error:", error);
+        }
       }
 
       if (data?.is_gabbai) {
         setIsGabbai(true);
         // Fetch unread count
-        const { data: count } = await supabase.rpc('get_gabbai_unread_count');
-        setGabbaiUnread(count || 0);
+        const { data: count, error: countError } = await supabase.rpc('get_gabbai_unread_count');
+        if (!countError) {
+          setGabbaiUnread(count || 0);
+        }
       } else {
         setIsGabbai(false);
       }

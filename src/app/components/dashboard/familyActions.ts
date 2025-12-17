@@ -39,60 +39,93 @@ export async function getFamilyMembers() {
 export async function addFamilyMember(formData: FormData) {
   const supabase = await getSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error("משתמש לא מחובר");
 
-  const birth_date = formData.get("birth_date") as string | null;
-  const born_after_sunset = formData.get("born_after_sunset") === "on";
+  const birth_date = formData.get("birth_date") as string;
+  const rawBorn = formData.get("born_after_sunset");
+  const born_after_sunset = rawBorn === "on" || rawBorn === "true";
 
-  await supabase.from("members").insert({
+  const payload: any = {
     first_name: formData.get("first_name"),
     last_name: formData.get("last_name"),
     role: formData.get("role"),
     gender: formData.get("gender"),
     tribe: formData.get("tribe"),
-    birth_date,
     born_after_sunset,
-    hebrew_birth_date: birth_date
-      ? toHebrewDateStringAdjusted(birth_date, born_after_sunset)
-      : null,
     created_by: user.id,
     updated_by: user.id,
-  });
+  };
+
+  if (birth_date) {
+    payload.birth_date = birth_date;
+    payload.hebrew_birth_date = toHebrewDateStringAdjusted(birth_date, born_after_sunset);
+  }
+
+  const { data, error } = await supabase
+    .from("members")
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Add Member Error:", error);
+    throw new Error(`שגיאה בהוספה: ${error.message}`);
+  }
 
   revalidatePath("/dashboard/family");
+  return data;
 }
 
 export async function updateFamilyMember(id: string, formData: FormData) {
   const supabase = await getSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error("משתמש לא מחובר");
 
-  const birth_date = formData.get("birth_date") as string | null;
-  const born_after_sunset = formData.get("born_after_sunset") === "on";
+  const birth_date = formData.get("birth_date") as string;
+  const rawBorn = formData.get("born_after_sunset");
+  const born_after_sunset = rawBorn === "on" || rawBorn === "true";
 
-  await supabase
+  const payload: any = {
+    first_name: formData.get("first_name"),
+    last_name: formData.get("last_name"),
+    role: formData.get("role"),
+    gender: formData.get("gender"),
+    tribe: formData.get("tribe"),
+    born_after_sunset,
+    updated_by: user.id,
+  };
+
+  if (birth_date) {
+    payload.birth_date = birth_date;
+    payload.hebrew_birth_date = toHebrewDateStringAdjusted(birth_date, born_after_sunset);
+  }
+
+  const { data, error } = await supabase
     .from("members")
-    .update({
-      first_name: formData.get("first_name"),
-      last_name: formData.get("last_name"),
-      role: formData.get("role"),
-      gender: formData.get("gender"),
-      tribe: formData.get("tribe"),
-      birth_date,
-      born_after_sunset,
-      hebrew_birth_date: birth_date
-        ? toHebrewDateStringAdjusted(birth_date, born_after_sunset)
-        : null,
-      updated_by: user.id,
-    })
+    .update(payload)
     .eq("id", id)
-    .eq("created_by", user.id);
+    .eq("created_by", user.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Update Member Error:", error);
+    throw new Error(`שגיאה בעדכון: ${error.message}`);
+  }
+
+  if (!data) {
+    console.error("Update Member Failed: No matching row found. User:", user.id, "ID:", id);
+    throw new Error("לא נמצאה רשומה לעדכון, או שאין לך הרשאה.");
+  }
 
   revalidatePath("/dashboard/family");
+  return data;
 }
 
 export async function deleteFamilyMember(id: string) {
   const supabase = await getSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
 
   const { data: member } = await supabase
     .from("members")
@@ -104,7 +137,12 @@ export async function deleteFamilyMember(id: string) {
     throw new Error("לא ניתן למחוק אב משפחה");
   }
 
-  await supabase.from("members").delete().eq("id", id);
+  const { error } = await supabase.from("members").delete().eq("id", id).eq("created_by", user.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
   revalidatePath("/dashboard/family");
 }
 

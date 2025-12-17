@@ -91,6 +91,11 @@ export async function middleware(request: NextRequest) {
             if (path.startsWith("/sign-in") || path.startsWith("/onboarding") || path.startsWith("/pending") || path.startsWith("/rejected")) {
                 return NextResponse.redirect(new URL("/dashboard", request.url));
             }
+        } else {
+            // No profile found? Treat as new user needing onboarding.
+            if (!path.startsWith("/onboarding")) {
+                return NextResponse.redirect(new URL("/onboarding", request.url));
+            }
         }
     }
 
