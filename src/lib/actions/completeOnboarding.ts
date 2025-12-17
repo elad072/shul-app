@@ -1,6 +1,6 @@
 "use server";
 
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { decodeToken } from "@/lib/auth/decodeToken";
 
 export async function completeOnboarding(formData: FormData) {
@@ -10,6 +10,8 @@ export async function completeOnboarding(formData: FormData) {
   if (!user?.sub) {
     throw new Error("Unauthorized");
   }
+
+  const supabaseAdmin = getSupabaseAdmin();
 
   // Update profile status
   const { error } = await supabaseAdmin

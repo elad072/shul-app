@@ -1,6 +1,6 @@
 'use server';
 
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -9,6 +9,8 @@ import { revalidatePath } from "next/cache";
  */
 export async function deleteUser(userId: string) {
     try {
+        const supabaseAdmin = getSupabaseAdmin();
+
         // 1. Manually delete from public.profiles FIRST to avoid Foreign Key violations
         // (If the DB is set up with 'ON DELETE RESTRICT', we must clean up children first)
         const { error: profileError } = await supabaseAdmin
