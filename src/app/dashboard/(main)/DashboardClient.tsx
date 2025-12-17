@@ -269,7 +269,7 @@ export default function DashboardClient({
 
         {/* --- Tab 5: Contact --- */}
         {activeTab === "contact" && (
-          <ContactTab userId={profile.id} />
+          <ContactTab userId={profile.id} onRead={checkUnread} />
         )}
       </div>
     </div>

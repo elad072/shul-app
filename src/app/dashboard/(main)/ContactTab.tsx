@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { Plus, MessageSquare, ChevronLeft, Send, Loader2, MoreVertical, Trash2, XCircle, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ type Message = {
     sender?: { first_name: string; last_name: string; is_gabbai: boolean };
 };
 
-export default function ContactTab({ userId }: { userId: string }) {
+export default function ContactTab({ userId, onRead }: { userId: string, onRead?: () => void }) {
     const [requests, setRequests] = useState<ContactRequest[]>([]);
     const [view, setView] = useState<"list" | "create" | "chat">("list");
     const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
@@ -181,6 +181,7 @@ export default function ContactTab({ userId }: { userId: string }) {
                     userId={userId}
                     requestId={selectedRequestId}
                     onBack={() => { setView("list"); setSelectedRequestId(null); fetchRequests(); }}
+                    onRead={onRead}
                 />
             )}
 
@@ -301,7 +302,7 @@ function CreateRequestForm({ userId, onCancel, onSuccess, subjects }: any) {
     );
 }
 
-function ChatView({ userId, requestId, onBack }: any) {
+function ChatView({ userId, requestId, onBack, onRead }: any) { Read }: any) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [loading, setLoading] = useState(true);
@@ -312,8 +313,19 @@ function ChatView({ userId, requestId, onBack }: any) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        if (!loading) scrollToBottom();
+    }, [messages, loading]);
+
     useEffect(() => {
         fetchMessages();
+        markAsRead();
 
         const channel = supabase
             .channel(`request-${requestId}`)
@@ -323,12 +335,25 @@ function ChatView({ userId, requestId, onBack }: any) {
                 (payload) => {
                     const newMsg = payload.new as Message;
                     setMessages(current => [...current, newMsg]);
+                    if (newMsg.sender_id !== userId) markAsRead();
                 }
             )
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
     }, [requestId]);
+
+    const markAsRead = async () => {
+        // Mark strictly other's messages as read
+        await supabase.from("contact_messages")
+            .update({ is_read: true })
+            .eq("request_id", requestId)
+            .neq("sender_id", userId)
+            .eq("is_read", false); // Only unread ones
+
+        // Notify parent to refresh badge
+        if (onRead) onRead();
+    };
 
     const fetchMessages = async () => {
         const { data } = await supabase
@@ -365,8 +390,8 @@ function ChatView({ userId, requestId, onBack }: any) {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-slate-50 md:static md:bg-white md:h-full flex flex-col h-[100dvh] md:h-auto">
-            <div className="p-4 bg-white border-b border-slate-200 flex items-center gap-2 sticky top-0 shadow-sm z-10 safe-top">
+        <div className="fixed inset-0 z-[200] bg-slate-50 md:static md:bg-white md:h-full flex flex-col h-[100dvh] md:h-auto">
+            <div className="p-4 bg-white border-b border-slate-200 flex items-center gap-2 shadow-sm z-10 safe-top">
                 <button onClick={onBack} className="p-2 -mr-2 text-slate-400 hover:bg-slate-50 rounded-full"><ChevronLeft /></button>
                 <div className="font-bold text-slate-800 text-lg">צ'אט עם הגבאי</div>
             </div>
@@ -404,6 +429,7 @@ function ChatView({ userId, requestId, onBack }: any) {
                         );
                     })
                 )}
+                <div ref={messagesEndRef} />
             </div>
 
             <div className="p-4 bg-white border-t border-slate-200 safe-bottom">
@@ -417,15 +443,14 @@ function ChatView({ userId, requestId, onBack }: any) {
                         className="flex-1 bg-transparent px-3 py-3 text-base focus:outline-none min-w-0 placeholder:text-slate-400 resize-none max-h-[120px]"
                         style={{ minHeight: '44px' }}
                     />
-                    <button
-                        onClick={handleSend}
-                        disabled={sending || !newMessage.trim()}
-                        className="w-11 h-11 mb-0.5 bg-blue-600 text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:bg-slate-300 shadow-lg shadow-blue-200 transition-transform active:scale-95"
+                    onClick={handleSend}
+                    disabled={sending || !newMessage.trim()}
+                    className="w-11 h-11 mb-0.5 bg-blue-600 text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:bg-slate-300 shadow-lg shadow-blue-200 transition-transform active:scale-95"
                     >
-                        {sending ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
-                    </button>
-                </div>
+                    {sending ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
+                </button>
             </div>
         </div>
+        </div >
     );
 }
