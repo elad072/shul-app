@@ -2,13 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import {
-  ShieldCheck,
+ShieldCheck,
   MessageCircle,
   FileText,
   Users,
   ChevronLeft,
-  Bell
+  Bell,
+  Settings,
+  UserCog,
+  MessageSquare
 } from "lucide-react";
 
 export default async function GabbaiDashboardPage() {
@@ -49,6 +51,9 @@ export default async function GabbaiDashboardPage() {
     .from("profiles")
     .select("*", { count: 'exact', head: true })
     .eq("status", "pending_approval");
+
+  // בדיקת הודעות שלא נקראו
+  const { data: unreadMessages } = await supabase.rpc('get_gabbai_unread_count');
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 pb-24 font-sans">
@@ -159,6 +164,56 @@ export default async function GabbaiDashboardPage() {
 
           <div className="mt-6 flex items-center gap-1 text-slate-400 text-sm group-hover:translate-x-[-4px] transition-transform">
             <span>ליצירת הודעה</span>
+            <ChevronLeft size={16} />
+          </div>
+        </Link>
+
+        {/* 5. הודעות ופניות */}
+        <Link href="/gabbai/messages" className="group relative bg-white border border-slate-200 hover:border-amber-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-amber-50 transition-colors">
+            <MessageSquare size={24} className="text-slate-600 group-hover:text-amber-600" />
+          </div>
+
+          <div className="mt-12">
+            <h3 className="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">
+              הודעות ופניות
+            </h3>
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+              צפייה בפניות חברים, טיפול בבקשות והתכתבות ישירה.
+            </p>
+          </div>
+
+          {/* Badge להודעות */}
+          {unreadMessages && unreadMessages > 0 ? (
+            <div className="mt-6 flex items-center gap-2 text-red-600 bg-red-50 w-fit px-3 py-1.5 rounded-full text-xs font-bold animate-pulse">
+              <Bell size={14} />
+              {unreadMessages} הודעות חדשות
+            </div>
+          ) : (
+            <div className="mt-6 flex items-center gap-1 text-slate-400 text-sm group-hover:translate-x-[-4px] transition-transform">
+              <span>לתיבת הדואר</span>
+              <ChevronLeft size={16} />
+            </div>
+          )}
+        </Link>
+
+        {/* 6. הגדרות אפליקציה */}
+        <Link href="/gabbai/settings" className="group relative bg-white border border-slate-200 hover:border-slate-400 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-slate-100 transition-colors">
+            <Settings size={24} className="text-slate-600 group-hover:text-slate-800" />
+          </div>
+
+          <div className="mt-12">
+            <h3 className="text-xl font-bold text-slate-800 group-hover:text-slate-900 transition-colors">
+              הגדרות גבאי
+            </h3>
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+              ניהול נושאי פניות דינאמיים והגדרות מערכת נוספות.
+            </p>
+          </div>
+
+          <div className="mt-6 flex items-center gap-1 text-slate-400 text-sm group-hover:translate-x-[-4px] transition-transform">
+            <span>להגדרות</span>
             <ChevronLeft size={16} />
           </div>
         </Link>
