@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { 
-  Bell, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Sparkles, 
-  Pin, 
-  User, 
+import {
+  Bell,
+  Calendar,
+  Clock,
+  MapPin,
+  Sparkles,
+  Pin,
+  User,
   BookOpen
 } from "lucide-react";
 
@@ -30,7 +30,7 @@ export default function DashboardClient({
   personalEvents,
   schedules
 }: Props) {
-  
+
   const [activeTab, setActiveTab] = useState<"overview" | "prayers" | "board" | "events">("overview");
 
   return (
@@ -38,65 +38,76 @@ export default function DashboardClient({
     <div className="space-y-6 font-sans pb-24 md:pb-10">
 
       {/* ===== Hero Section ===== */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 to-indigo-600 p-6 shadow-xl text-white">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-        <div className="relative z-10 flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-1 bg-white/20 backdrop-blur rounded-2xl shrink-0">
-              <div className="relative w-12 h-12 bg-white rounded-xl overflow-hidden shadow-sm">
-                <Image src="/logo.png" alt="לוגו" fill className="object-contain p-1" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F2027] via-[#203A43] to-[#2C5364] p-6 shadow-xl text-white">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4"></div>
+
+        <div className="relative z-10 flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-1.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-inner">
+                <div className="relative w-12 h-12 bg-white rounded-xl overflow-hidden shadow-sm">
+                  <Image src="/logo.png" alt="לוגו" fill className="object-contain p-1" />
+                </div>
               </div>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                שלום, {profile?.first_name} <span className="animate-pulse">👋</span>
-              </h1>
-              <p className="text-blue-100 text-xs flex items-center gap-1 opacity-90">
-                <Sparkles size={12} /> ברוכים הבאים
-              </p>
+              <div>
+                <h1 className="text-2xl font-bold flex items-center gap-2 tracking-tight">
+                  שלום, {profile?.first_name} <span className="animate-pulse">👋</span>
+                </h1>
+                <p className="text-blue-100/80 text-sm font-medium flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-amber-300" /> ברוכים הבאים
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white/10 border border-white/20 backdrop-blur-md rounded-xl p-3 text-center w-full">
-            <div className="text-lg font-bold leading-none mb-1">{hebrewInfo.dateString}</div>
-            <div className="text-xs text-blue-100 font-medium">פרשת {hebrewInfo.parasha}</div>
+          <div className="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <div className="text-lg font-bold leading-tight text-amber-50">{hebrewInfo.dateString}</div>
+              <div className="text-sm text-blue-100/70 font-medium mt-0.5">פרשת {hebrewInfo.parasha}</div>
+            </div>
+            <div className="h-8 w-[1px] bg-white/20 mx-4"></div>
+            <div className="text-center">
+              <div className="text-xs text-blue-200 uppercase tracking-wider font-bold">היום</div>
+              <div className="font-mono font-bold text-lg">{new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' })}</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ===== Navigation Tabs (מותאם למובייל - גלילה אופקית) ===== */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur pt-2 pb-2">
-        <div className="flex p-1 bg-white border border-slate-200 rounded-2xl overflow-x-auto no-scrollbar shadow-sm">
-          <TabButton 
-            active={activeTab === "overview"} 
-            onClick={() => setActiveTab("overview")} 
-            icon={<User size={18}/>} 
-            label="ראשי" 
+      {/* ===== Navigation Tabs ===== */}
+      <div className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-lg pt-2 pb-4 -mx-4 px-4 shadow-[0_10px_20px_-10px_rgba(0,0,0,0.05)]">
+        <div className="flex p-1.5 bg-white border border-slate-200/60 rounded-2xl overflow-x-auto no-scrollbar shadow-sm gap-1">
+          <TabButton
+            active={activeTab === "overview"}
+            onClick={() => setActiveTab("overview")}
+            icon={<User size={20} />}
+            label="ראשי"
           />
-          <TabButton 
-            active={activeTab === "prayers"} 
-            onClick={() => setActiveTab("prayers")} 
-            icon={<Clock size={18}/>} 
-            label="זמנים" 
+          <TabButton
+            active={activeTab === "prayers"}
+            onClick={() => setActiveTab("prayers")}
+            icon={<Clock size={18} />}
+            label="זמנים"
           />
-          <TabButton 
-            active={activeTab === "board"} 
-            onClick={() => setActiveTab("board")} 
-            icon={<Bell size={18}/>} 
-            label="מודעות" 
+          <TabButton
+            active={activeTab === "board"}
+            onClick={() => setActiveTab("board")}
+            icon={<Bell size={18} />}
+            label="מודעות"
           />
-          <TabButton 
-            active={activeTab === "events"} 
-            onClick={() => setActiveTab("events")} 
-            icon={<Calendar size={18}/>} 
-            label="אירועים" 
+          <TabButton
+            active={activeTab === "events"}
+            onClick={() => setActiveTab("events")}
+            icon={<Calendar size={18} />}
+            label="אירועים"
           />
         </div>
       </div>
 
       {/* ===== Content Area ===== */}
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 min-h-[50vh]">
-        
+
         {/* --- Tab 1: Overview --- */}
         {activeTab === "overview" && (
           <div className="space-y-6">
@@ -122,15 +133,15 @@ export default function DashboardClient({
             {announcements[0] && (
               <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
                 <div className="flex justify-between items-center mb-3">
-                   <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                     <Bell size={18} className="text-orange-500" /> הודעה אחרונה
-                   </h3>
+                  <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                    <Bell size={18} className="text-orange-500" /> הודעה אחרונה
+                  </h3>
                 </div>
                 <h4 className="font-bold text-slate-700">{announcements[0].title}</h4>
                 <p className="text-sm text-slate-500 line-clamp-2 mt-1">{announcements[0].content}</p>
               </div>
             )}
-            
+
             {/* אירוע קרוב */}
             {communityEvents[0] && (
               <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
@@ -138,13 +149,13 @@ export default function DashboardClient({
                   <Calendar size={18} className="text-green-600" /> אירוע קרוב
                 </h3>
                 <div className="flex gap-3 items-center">
-                   <div className="bg-green-50 rounded-xl p-2 text-center min-w-[50px] border border-green-100">
-                      <div className="text-lg font-bold text-green-700">{new Date(communityEvents[0].start_time).getDate()}</div>
-                   </div>
-                   <div>
-                      <div className="font-bold text-slate-700">{communityEvents[0].title}</div>
-                      <div className="text-xs text-slate-400">{new Date(communityEvents[0].start_time).toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'})}</div>
-                   </div>
+                  <div className="bg-green-50 rounded-xl p-2 text-center min-w-[50px] border border-green-100">
+                    <div className="text-lg font-bold text-green-700">{new Date(communityEvents[0].start_time).getDate()}</div>
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-700">{communityEvents[0].title}</div>
+                    <div className="text-xs text-slate-400">{new Date(communityEvents[0].start_time).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}</div>
+                  </div>
                 </div>
               </div>
             )}
@@ -154,21 +165,21 @@ export default function DashboardClient({
         {/* --- Tab 2: Prayers --- */}
         {activeTab === "prayers" && (
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-             <div className="divide-y divide-slate-100">
-               {schedules.map((s) => (
-                 <div key={s.id} className="p-4 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-700">{s.title}</div>
-                      <div className="text-xs text-slate-400">
-                        {s.day_of_week === null ? "כל יום" : ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"][s.day_of_week]}
-                      </div>
+            <div className="divide-y divide-slate-100">
+              {schedules.map((s) => (
+                <div key={s.id} className="p-4 flex items-center justify-between">
+                  <div>
+                    <div className="font-bold text-slate-700">{s.title}</div>
+                    <div className="text-xs text-slate-400">
+                      {s.day_of_week === null ? "כל יום" : ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"][s.day_of_week]}
                     </div>
-                    <div className="text-lg font-bold text-slate-800 bg-slate-50 px-3 py-1 rounded-xl">
-                      {s.time_of_day.slice(0,5)}
-                    </div>
-                 </div>
-               ))}
-             </div>
+                  </div>
+                  <div className="text-lg font-bold text-slate-800 bg-slate-50 px-3 py-1 rounded-xl">
+                    {s.time_of_day.slice(0, 5)}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -197,19 +208,19 @@ export default function DashboardClient({
         {/* --- Tab 4: Events --- */}
         {activeTab === "events" && (
           <div className="space-y-6">
-             {/* קהילה */}
-             <div className="space-y-3">
-               <h3 className="font-bold text-slate-500 text-xs uppercase tracking-wider">אירועי קהילה</h3>
-               {communityEvents.map(e => <EventCard key={e.id} event={e} type="community" />)}
-               {communityEvents.length === 0 && <p className="text-sm text-slate-400">אין אירועים</p>}
-             </div>
-             
-             {/* אישי */}
-             <div className="space-y-3">
-               <h3 className="font-bold text-slate-500 text-xs uppercase tracking-wider">אירועים אישיים</h3>
-               {personalEvents.map(e => <EventCard key={e.id} event={e} type="personal" />)}
-               {personalEvents.length === 0 && <p className="text-sm text-slate-400">אין אירועים</p>}
-             </div>
+            {/* קהילה */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-slate-500 text-xs uppercase tracking-wider">אירועי קהילה</h3>
+              {communityEvents.map(e => <EventCard key={e.id} event={e} type="community" />)}
+              {communityEvents.length === 0 && <p className="text-sm text-slate-400">אין אירועים</p>}
+            </div>
+
+            {/* אישי */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-slate-500 text-xs uppercase tracking-wider">אירועים אישיים</h3>
+              {personalEvents.map(e => <EventCard key={e.id} event={e} type="personal" />)}
+              {personalEvents.length === 0 && <p className="text-sm text-slate-400">אין אירועים</p>}
+            </div>
           </div>
         )}
 
@@ -220,14 +231,15 @@ export default function DashboardClient({
 
 function TabButton({ active, onClick, icon, label }: any) {
   return (
-    <button 
-      onClick={onClick} 
-      className={`flex-1 min-w-[80px] flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-xs font-bold transition-all ${
-        active ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'
-      }`}
+    <button
+      onClick={onClick}
+      className={`flex-1 min-w-[80px] flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 relative overflow-hidden ${active
+        ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 scale-100'
+        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+        }`}
     >
-      {icon}
-      {label}
+      <span className="relative z-10">{icon}</span>
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -238,17 +250,17 @@ function EventCard({ event, type }: any) {
 
   return (
     <div className="flex bg-white rounded-2xl p-3 border border-slate-200 shadow-sm items-center gap-3">
-       <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-xl shrink-0 ${isPersonal ? 'bg-purple-50 text-purple-600' : 'bg-green-50 text-green-600'}`}>
-         <span className="text-lg font-bold leading-none">{date.getDate()}</span>
-         <span className="text-[10px] uppercase font-bold">{date.toLocaleString('en-US', {month:'short'})}</span>
-       </div>
-       <div className="min-w-0">
-         <h4 className="font-bold text-slate-800 text-sm truncate">{event.title || event.description}</h4>
-         <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-            {!isPersonal && <><Clock size={10}/> {date.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'})}</>}
-            {!isPersonal && event.location && <span className="truncate">• {event.location}</span>}
-         </div>
-       </div>
+      <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-xl shrink-0 ${isPersonal ? 'bg-purple-50 text-purple-600' : 'bg-green-50 text-green-600'}`}>
+        <span className="text-lg font-bold leading-none">{date.getDate()}</span>
+        <span className="text-[10px] uppercase font-bold">{date.toLocaleString('en-US', { month: 'short' })}</span>
+      </div>
+      <div className="min-w-0">
+        <h4 className="font-bold text-slate-800 text-sm truncate">{event.title || event.description}</h4>
+        <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+          {!isPersonal && <><Clock size={10} /> {date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}</>}
+          {!isPersonal && event.location && <span className="truncate">• {event.location}</span>}
+        </div>
+      </div>
     </div>
   )
 }

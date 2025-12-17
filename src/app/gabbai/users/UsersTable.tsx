@@ -98,8 +98,8 @@ export default function UsersTable({ initialUsers }: { initialUsers: Profile[] }
                 />
             </div>
 
-            {/* Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            {/* Desktop Table - Hidden on Mobile */}
+            <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-right">
                         <thead className="bg-slate-50 border-b border-slate-200">
@@ -192,6 +192,74 @@ export default function UsersTable({ initialUsers }: { initialUsers: Profile[] }
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Cards - Visible only on Mobile */}
+            <div className="md:hidden space-y-4">
+                {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                        <div key={user.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
+                                        {(user.first_name?.[0] || "")}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-900 text-lg">
+                                            {user.first_name} {user.last_name}
+                                        </h3>
+                                        <div className="text-xs text-slate-500">
+                                            הצטרף ב- {new Date(user.created_at).toLocaleDateString("he-IL")}
+                                        </div>
+                                    </div>
+                                </div>
+                                {user.is_gabbai && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">
+                                        <ShieldCheck size={12} />
+                                        גבאי
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="space-y-2 mb-4">
+                                <div className="flex items-center gap-2 text-sm text-slate-600">
+                                    <Mail size={16} className="text-slate-400" />
+                                    {user.email}
+                                </div>
+                                {user.phone && (
+                                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                                        <Phone size={16} className="text-slate-400" />
+                                        {user.phone}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-2 pt-4 border-t border-slate-100">
+                                <button
+                                    onClick={() => {
+                                        setEditingUser(user);
+                                        setIsEditDialogOpen(true);
+                                    }}
+                                    className="flex-1 py-2.5 flex items-center justify-center gap-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl font-bold transition-colors text-sm"
+                                >
+                                    <Edit2 size={16} />
+                                    עריכה
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(user.id)}
+                                    className="flex-1 py-2.5 flex items-center justify-center gap-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl font-bold transition-colors text-sm"
+                                >
+                                    <Trash2 size={16} />
+                                    מחיקה
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <p className="text-slate-500">לא נמצאו משתמשים</p>
+                    </div>
+                )}
             </div>
 
             <UserEditDialog

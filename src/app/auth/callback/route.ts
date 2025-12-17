@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   // זה עובד גם ב-Localhost וגם בענן
   const host = request.headers.get("x-forwarded-host") || requestUrl.host;
   const protocol = request.headers.get("x-forwarded-proto") || "https";
-  
+
   // בניית ה-Origin הנכון (בלי פורטים כפולים ובלי לשבור את הדומיין)
   const origin = `${protocol}://${host}`;
 
@@ -30,7 +30,12 @@ export async function GET(request: Request) {
           setAll(cookiesToSet) {
             try {
               cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
+                cookieStore.set(name, value, {
+                  ...options,
+                  maxAge: 60 * 60 * 24 * 30, // 30 days 
+                  sameSite: 'lax',
+                  secure: process.env.NODE_ENV === 'production'
+                })
               );
             } catch {
               // Server Component ignores setAll

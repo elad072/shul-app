@@ -12,11 +12,11 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  
+
   // הוספת ה-header הזה דורשת middleware כפי שדיברנו קודם.
   // אם אין לך middleware, ה-isFamilyPage עלול לא לעבוד בצד שרת.
   const headerList = await headers();
-  const pathname = headerList.get("x-pathname") || "";
+  const pathname = headerList.get("x-current-path") || "";
   const isFamilyPage = pathname.startsWith("/dashboard/family");
 
   const supabase = createServerClient(
@@ -30,7 +30,7 @@ export default async function DashboardLayout({
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             );
-          } catch {}
+          } catch { }
         },
       },
     }
@@ -67,7 +67,7 @@ export default async function DashboardLayout({
         <div className="max-w-7xl mx-auto p-4 md:p-8 pb-32 lg:pb-12">
           {children}
         </div>
-        
+
         {/* תפריט נייד */}
         <MobileTabs />
       </main>

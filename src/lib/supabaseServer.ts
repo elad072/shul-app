@@ -12,11 +12,23 @@ export async function createSupabaseServer() {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set() {
-          // Codespaces לא מאפשר כתיבה, מתעלמים
+        set(name: string, value: string, options: any) {
+          // Force cookies to last 30 days
+          try {
+            cookieStore.set({
+              name,
+              value,
+              ...options,
+              maxAge: 60 * 60 * 24 * 30, // 30 days
+              sameSite: 'lax',
+              secure: process.env.NODE_ENV === 'production'
+            });
+          } catch { /* Server Component ReadOnly */ }
         },
-        remove() {
-          // מתעלמים
+        remove(name: string, options: any) {
+          try {
+            cookieStore.set({ name, value: '', ...options, maxAge: 0 });
+          } catch { /* Server Component ReadOnly */ }
         }
       }
     }

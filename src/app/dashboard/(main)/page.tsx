@@ -16,7 +16,7 @@ export default async function Dashboard() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
-  // 1. נתוני פרופיל
+  // 1. נתוני פרופיל (Blocking - we need this for 4)
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
@@ -25,38 +25,44 @@ export default async function Dashboard() {
 
   const hebrewInfo = getCurrentHebrewInfo();
 
-  // 2. הודעות
-  const { data: announcements } = await supabase
-    .from("announcements")
-    .select("*")
-    .order("is_pinned", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(5);
+  // Parallel Fetching for non-dependent data
+  const [
+    { data: announcements },
+    { data: communityEvents },
+    { data: personalEvents },
+    { data: schedules }
+  ] = await Promise.all([
+    // 2. הודעות
+    supabase
+      .from("announcements")
+      .select("*")
+      .order("is_pinned", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(5),
 
-  // 3. אירועי קהילה
-  const { data: communityEvents } = await supabase
-    .from("community_events")
-    .select("*")
-    .gte("start_time", new Date().toISOString())
-    .order("start_time", { ascending: true })
-    .limit(5);
+    // 3. אירועי קהילה
+    supabase
+      .from("community_events")
+      .select("*")
+      .gte("start_time", new Date().toISOString())
+      .order("start_time", { ascending: true })
+      .limit(5),
 
-  // 4. אירועים אישיים
-  const { data: personalEvents } = await supabase
-    .from("personal_events")
-    .select("*")
-    .eq("created_by", user.id)
-    .gte("gregorian_date", new Date().toISOString())
-    .order("gregorian_date", { ascending: true })
-    .limit(5);
+    // 4. אירועים אישיים
+    supabase
+      .from("personal_events")
+      .select("*")
+      .eq("created_by", user.id)
+      .gte("gregorian_date", new Date().toISOString())
+      .order("gregorian_date", { ascending: true })
+      .limit(5),
 
-  // 5. זמני תפילה (החלק שחסר לך)
-  const { data: schedules } = await supabase
-    .from("schedules")
-    .select("*")
-    .order("time_of_day", { ascending: true });
-
-  // 6. שליחת הכל לקומפוננטת הלקוח
+    // 5. זמני תפילה
+    supabase
+      .from("schedules")
+      .select("*")
+      .order("time_of_day", { ascending: true })
+  ]);
   return (
     <DashboardClient
       profile={profile}

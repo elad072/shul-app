@@ -11,6 +11,12 @@ const heebo = Heebo({
 export const metadata = {
   title: "בית הכנסת מעון קודשך - אפליקציה",
   description: "מערכת לניהול בית כנסת מעון קודשך",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "מעון קודשך",
+  },
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",
