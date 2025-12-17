@@ -248,13 +248,13 @@ function CreateRequestForm({ userId, onCancel, onSuccess, subjects }: any) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-50 md:static md:bg-white md:h-full flex flex-col">
-            <div className="p-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 shadow-sm z-10 pt-safe-top">
+        <div className="fixed inset-0 z-[100] bg-slate-50 md:static md:bg-white md:h-full flex flex-col h-[100dvh] md:h-auto">
+            <div className="p-4 bg-white border-b border-slate-200 flex items-center gap-3 sticky top-0 shadow-sm z-10 safe-top">
                 <button onClick={onCancel} className="p-2 -mr-2 text-slate-500 hover:bg-slate-50 rounded-full active:bg-slate-100"><ChevronLeft size={24} /></button>
                 <h3 className="font-bold text-xl text-slate-800">פנייה חדשה</h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-5 space-y-8">
+            <div className="flex-1 overflow-y-auto p-5 space-y-8 pb-32 overscroll-contain">
                 <div className="space-y-3">
                     <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">בחר נושא</label>
                     <div className="grid grid-cols-1 gap-3">
@@ -281,19 +281,19 @@ function CreateRequestForm({ userId, onCancel, onSuccess, subjects }: any) {
                     <textarea
                         value={content}
                         onChange={e => setContent(e.target.value)}
-                        className="w-full p-5 rounded-2xl border-0 shadow-sm focus:ring-2 focus:ring-blue-500 bg-white min-h-[160px] resize-none text-base placeholder:text-slate-300"
+                        className="w-full p-5 rounded-2xl border-0 shadow-sm focus:ring-2 focus:ring-blue-500 bg-white min-h-[200px] resize-none text-base placeholder:text-slate-300"
                         placeholder="כתוב כאן את תוכן הפנייה..."
                     ></textarea>
                 </div>
             </div>
 
-            <div className="p-4 bg-white border-t border-slate-200 pb-safe-bottom">
+            <div className="p-4 bg-white border-t border-slate-200 safe-bottom">
                 <button
                     onClick={handleSubmit}
                     disabled={isLoading}
-                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-xl shadow-blue-200 hover:bg-blue-700 transition flex justify-center items-center gap-2 active:scale-[0.98]"
+                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 hover:bg-blue-700 transition flex justify-center items-center gap-2 active:scale-[0.98]"
                 >
-                    {isLoading ? <Loader2 className="animate-spin" /> : <Send size={20} />}
+                    {isLoading ? <Loader2 className="animate-spin" /> : <Send size={22} />}
                     שלח פנייה
                 </button>
             </div>
@@ -365,13 +365,13 @@ function ChatView({ userId, requestId, onBack }: any) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-50 md:static md:bg-white md:h-full flex flex-col">
-            <div className="p-4 bg-white border-b border-slate-200 flex items-center gap-2 sticky top-0 shadow-sm z-10 pt-safe-top">
-                <button onClick={onBack} className="p-2 -mr-2 text-slate-500 hover:bg-slate-50 rounded-full active:bg-slate-100"><ChevronLeft size={24} /></button>
+        <div className="fixed inset-0 z-[100] bg-slate-50 md:static md:bg-white md:h-full flex flex-col h-[100dvh] md:h-auto">
+            <div className="p-4 bg-white border-b border-slate-200 flex items-center gap-2 sticky top-0 shadow-sm z-10 safe-top">
+                <button onClick={onBack} className="p-2 -mr-2 text-slate-400 hover:bg-slate-50 rounded-full"><ChevronLeft /></button>
                 <div className="font-bold text-slate-800 text-lg">צ'אט עם הגבאי</div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 pb-24">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 pb-32 overscroll-contain">
                 {loading ? (
                     <div className="flex justify-center pt-10"><Loader2 className="animate-spin text-slate-300" /></div>
                 ) : (
@@ -391,12 +391,12 @@ function ChatView({ userId, requestId, onBack }: any) {
                                     </div>
                                 )}
 
-                                <div className={`max-w-[85%] p-4 px-5 rounded-2xl text-sm shadow-sm relative group ${isMe
+                                <div className={`max-w-[85%] p-4 px-5 rounded-3xl text-sm shadow-sm relative group ${isMe
                                     ? 'bg-blue-600 text-white rounded-br-none shadow-blue-200'
                                     : 'bg-white border border-slate-100 text-slate-800 rounded-bl-none'
                                     }`}>
                                     <div className="leading-relaxed text-base">{msg.content}</div>
-                                    <div className={`text-[10px] mt-1.5 text-left opacity-70 ${isMe ? 'text-blue-100' : 'text-slate-400'}`}>
+                                    <div className={`text-[10px] mt-2 text-left opacity-70 ${isMe ? 'text-blue-100' : 'text-slate-400'}`}>
                                         {new Date(msg.created_at).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </div>
@@ -406,22 +406,23 @@ function ChatView({ userId, requestId, onBack }: any) {
                 )}
             </div>
 
-            <div className="p-4 bg-white border-t border-slate-200 pb-safe-bottom">
-                <div className="flex gap-2 items-center bg-slate-100 p-2 rounded-2xl border border-slate-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-white focus-within:bg-white transition-all">
-                    <input
+            <div className="p-4 bg-white border-t border-slate-200 safe-bottom">
+                <div className="flex gap-2 items-end bg-slate-100 p-2 rounded-3xl border border-slate-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-white focus-within:bg-white transition-all shadow-sm">
+                    <textarea
                         value={newMessage}
                         onChange={e => setNewMessage(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleSend()}
-                        type="text"
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                         placeholder="כתוב תגובה..."
-                        className="flex-1 bg-transparent px-3 py-2 text-base focus:outline-none min-w-0 placeholder:text-slate-400"
+                        rows={1}
+                        className="flex-1 bg-transparent px-3 py-3 text-base focus:outline-none min-w-0 placeholder:text-slate-400 resize-none max-h-[120px]"
+                        style={{ minHeight: '44px' }}
                     />
                     <button
                         onClick={handleSend}
                         disabled={sending || !newMessage.trim()}
-                        className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center disabled:opacity-50 disabled:bg-slate-300 shadow-md shadow-blue-100"
+                        className="w-11 h-11 mb-0.5 bg-blue-600 text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:bg-slate-300 shadow-lg shadow-blue-200 transition-transform active:scale-95"
                     >
-                        {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={20} />}
+                        {sending ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
                     </button>
                 </div>
             </div>

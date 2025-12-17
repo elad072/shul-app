@@ -96,7 +96,7 @@ export default function DashboardClient({
 
       {/* ===== Navigation Tabs ===== */}
       <div className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-lg pt-2 pb-4 -mx-4 px-4 shadow-[0_10px_20px_-10px_rgba(0,0,0,0.05)]">
-        <div className="flex p-1.5 bg-white border border-slate-200/60 rounded-2xl overflow-x-auto no-scrollbar shadow-sm gap-1">
+        <div className="grid grid-cols-3 md:flex p-1.5 bg-white border border-slate-200/60 rounded-2xl shadow-sm gap-1">
           <TabButton
             active={activeTab === "overview"}
             onClick={() => setActiveTab("overview")}
@@ -127,6 +127,7 @@ export default function DashboardClient({
             icon={<MessageSquare size={18} />}
             label="פניות"
             badge={unreadCount > 0 ? unreadCount : undefined}
+            className="col-span-2 md:col-span-1" // Make the last tab span 2 cols on mobile to center it or fill row
           />
         </div>
       </div>
@@ -275,13 +276,13 @@ export default function DashboardClient({
   );
 }
 
-function TabButton({ active, onClick, icon, label, badge }: any) {
+function TabButton({ active, onClick, icon, label, badge, className }: any) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 min-w-[80px] flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 relative overflow-hidden ${active
-        ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 scale-100'
-        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+      className={` ${className || ''} flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all duration-300 relative overflow-hidden ${active
+        ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 scale-100 ring-2 ring-slate-900 ring-offset-2'
+        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 bg-transparent'
         }`}
     >
       {badge && (
