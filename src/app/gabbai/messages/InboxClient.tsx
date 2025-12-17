@@ -65,6 +65,21 @@ export default function InboxClient({ currentUserId }: { currentUserId: string }
 
         setMessages(data as any[] || []);
         setLoadingChat(false);
+
+        // Mark unread messages from USER as read (since Gabbai is viewing them)
+        // We do this silently in background
+        if (data && data.length > 0) {
+            const unreadIds = data.filter((m: any) => !m.is_read && m.sender_id !== currentUserId).map((m: any) => m.id);
+            if (unreadIds.length > 0) {
+                await supabase
+                    .from("contact_messages")
+                    .update({ is_read: true })
+                    .in("id", unreadIds);
+
+                // Trigger sidebar refresh
+                window.dispatchEvent(new Event('refresh-sidebar-badges'));
+            }
+        }
     };
 
     const handleSend = async () => {
@@ -95,8 +110,20 @@ export default function InboxClient({ currentUserId }: { currentUserId: string }
         if (!selectedRequest) return;
         await supabase.from("contact_requests").update({ status }).eq("id", selectedRequest.id);
 
+        // If closing, ensure all messages are marked as read so notification clears
+        if (status === 'closed') {
+            await supabase
+                .from("contact_messages")
+                .update({ is_read: true })
+                .eq("request_id", selectedRequest.id);
+        }
+
         // Update local state
         setRequests(reqs => reqs.map(r => r.id === selectedRequest.id ? { ...r, status } : r));
+
+        // Trigger sidebar refresh
+        window.dispatchEvent(new Event('refresh-sidebar-badges'));
+
         toast.success("סטטוס עודכן");
     };
 
@@ -174,8 +201,8 @@ export default function InboxClient({ currentUserId }: { currentUserId: string }
                                             </div>
 
                                             <div className={`max-w-[75%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${isMe
-                                                    ? 'bg-blue-600 text-white rounded-br-none shadow-blue-100'
-                                                    : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'
+                                                ? 'bg-blue-600 text-white rounded-br-none shadow-blue-100'
+                                                : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'
                                                 }`}>
                                                 {msg.content}
                                                 <div className={`text-[10px] mt-1 text-left opacity-70`}>

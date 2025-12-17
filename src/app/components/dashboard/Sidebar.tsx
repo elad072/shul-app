@@ -17,9 +17,11 @@ export default function Sidebar() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // בדיקת הרשאות בטעינת הקומפוננטה
+  const [gabbaiUnread, setGabbaiUnread] = useState(0);
+
+  // בדיקת הרשאות וטעינת נתונים
   useEffect(() => {
-    async function checkGabbaiStatus() {
+    async function initSidebar() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase
@@ -30,11 +32,25 @@ export default function Sidebar() {
 
         if (data?.is_gabbai) {
           setIsGabbai(true);
+          // Fetch unread count for Gabbai
+          const { data: count } = await supabase.rpc('get_gabbai_unread_count');
+          setGabbaiUnread(count || 0);
+
+          // Subscribe to changes (simple poll or realtime - sticking into interval for simplicity or just run once)
+          // For now, let's just fetch once.
         }
       }
     }
-    checkGabbaiStatus();
-  }, [supabase]);
+    initSidebar();
+
+    // Listen for custom event to refresh badge
+    const handleRefresh = () => initSidebar();
+    window.addEventListener('refresh-sidebar-badges', handleRefresh);
+
+    return () => {
+      window.removeEventListener('refresh-sidebar-badges', handleRefresh);
+    };
+  }, [supabase, pathname]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -81,12 +97,7 @@ export default function Sidebar() {
           active={pathname === "/dashboard/family"}
         />
 
-        <SidebarItem
-          icon={<MessageSquare size={20} />}
-          label="הודעות ופניות"
-          href="/gabbai/messages"
-          active={pathname === "/gabbai/messages"}
-        />
+
         <SidebarItem
           icon={<UserCog size={20} />}
           label="הגדרות אפליקציה"
@@ -113,8 +124,16 @@ export default function Sidebar() {
               icon={<ShieldAlert size={20} />}
               label="אזור גבאי"
               href="/gabbai"
-              active={pathname.startsWith("/gabbai")}
+              active={pathname.startsWith("/gabbai") && pathname !== "/gabbai/messages" && pathname !== "/gabbai/settings"}
               special
+            />
+            <SidebarItem
+              icon={<MessageSquare size={20} />}
+              label="הודעות ופניות"
+              href="/gabbai/messages"
+              active={pathname === "/gabbai/messages"}
+              special
+              badge={gabbaiUnread}
             />
           </>
         )}
@@ -135,7 +154,7 @@ export default function Sidebar() {
 }
 
 // קומפוננטת עזר
-function SidebarItem({ icon, label, href, onClick, active = false, danger = false, special = false }: any) {
+function SidebarItem({ icon, label, href, onClick, active = false, danger = false, special = false, badge }: any) {
 
   // לוגיקה לצבעים
   let activeClass = "";
@@ -158,14 +177,19 @@ function SidebarItem({ icon, label, href, onClick, active = false, danger = fals
   }
 
   const baseClasses = `
-    flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm w-full cursor-pointer
-    ${active ? activeClass : inactiveClass}
-  `;
+      flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm w-full cursor-pointer relative
+      ${active ? activeClass : inactiveClass}
+    `;
 
   const content = (
     <>
       <span className={iconColor}>{icon}</span>
-      <span>{label}</span>
+      <span className="flex-1 text-right">{label}</span>
+      {badge > 0 && (
+        <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center">
+          {badge}
+        </span>
+      )}
     </>
   );
 

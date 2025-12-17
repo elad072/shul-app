@@ -111,9 +111,19 @@ export default function ContactTab({ userId, onRead }: { userId: string, onRead?
                     </div>
 
                     {/* Mobile Header (Simple Title) */}
-                    <div className="md:hidden p-4 pb-2">
-                        <h3 className="text-2xl font-bold text-slate-800">הפניות שלי</h3>
-                        <p className="text-sm text-slate-500">לרשותך בכל עניין ושאלה</p>
+                    <div className="md:hidden p-4 pb-2 space-y-4">
+                        <div>
+                            <h3 className="text-2xl font-bold text-slate-800">הפניות שלי</h3>
+                            <p className="text-sm text-slate-500">לרשותך בכל עניין ושאלה</p>
+                        </div>
+
+                        <button
+                            onClick={() => setView("create")}
+                            className="w-full bg-blue-600 text-white py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-blue-200 active:scale-[0.98] transition"
+                        >
+                            <Plus size={20} className="stroke-[3px]" />
+                            פתח פנייה חדשה
+                        </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar pb-24">
@@ -378,7 +388,8 @@ function ChatView({ userId, requestId, onBack, onRead }: any) {
             });
 
             await supabase.from("contact_requests").update({
-                last_activity_at: new Date().toISOString()
+                last_activity_at: new Date().toISOString(),
+                status: 'in_progress' // Re-open if closed
             }).eq("id", requestId);
 
             setNewMessage("");

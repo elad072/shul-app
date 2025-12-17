@@ -154,6 +154,32 @@ export default function DashboardClient({
               </div>
             )}
 
+            {/* PayBox Donation Button */}
+            <a
+              href="https://links.payboxapp.com/kmd902cjLUb"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-gradient-to-r from-[#00A4F3] to-[#0085C4] rounded-3xl p-5 shadow-lg shadow-blue-200 text-white active:scale-[0.98] transition relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition"></div>
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white p-2.5 rounded-2xl shadow-sm shrink-0">
+                    <Image src="/paybox-logo.png" alt="PayBox" width={32} height={32} className="object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    {/* Fallback icon if image fails (using a placeholder or just hiding it) - actually let's use a generic icon if no image */}
+                    <span className="text-[#00A4F3] text-2xl font-black leading-none">P</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg leading-tight">תרומה לבית הכנסת</h3>
+                    <p className="text-blue-100 text-sm mt-0.5">השימוש ב-PayBox חינם!</p>
+                  </div>
+                </div>
+                <div className="bg-white/20 p-2 rounded-full">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </div>
+              </div>
+            </a>
+
             {/* זמנים קרובים */}
             <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
               <div className="flex justify-between items-center mb-4">
