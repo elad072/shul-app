@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Home, Users, LogOut, Calendar, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Users, UserCog, Calendar, ShieldCheck, LogOut, MessageSquare, PenTool, CheckSquare, Home, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -82,8 +82,20 @@ export default function Sidebar() {
         />
 
         <SidebarItem
+          icon={<MessageSquare size={20} />}
+          label="הודעות ופניות"
+          href="/gabbai/messages"
+          active={pathname === "/gabbai/messages"}
+        />
+        <SidebarItem
+          icon={<UserCog size={20} />}
+          label="הגדרות אפליקציה"
+          href="/gabbai/settings"
+          active={pathname === "/gabbai/settings"}
+        />
+        <SidebarItem
           icon={<Calendar size={20} />}
-          label="אירועים אישיים"
+          label="ניהול תוכן וזמנים"
           href="/dashboard/events"
           active={pathname === "/dashboard/events"}
         />

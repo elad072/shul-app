@@ -10,7 +10,7 @@ const heebo = Heebo({
 
 export const metadata = {
   title: "בית הכנסת מעון קודשך - אפליקציה",
-  description: "מערכת לניהול בית כנסת מעון קודשך",
+  description: "מערכת לניהול בית כנסת מעון קודשך - שכונת כרמים",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -30,6 +30,10 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+import { Toaster } from "sonner";
+
+// ...
+
 export default function RootLayout({
   children,
 }: {
@@ -39,6 +43,7 @@ export default function RootLayout({
     <html lang="he" dir="rtl">
       <body className={`${heebo.className} bg-slate-50 text-slate-900`}>
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

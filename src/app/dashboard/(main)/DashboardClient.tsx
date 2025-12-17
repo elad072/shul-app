@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 import Image from "next/image";
 import {
   Bell,
@@ -10,8 +11,10 @@ import {
   Sparkles,
   Pin,
   User,
-  BookOpen
+  BookOpen,
+  MessageSquare
 } from "lucide-react";
+import ContactTab from "./ContactTab";
 
 type Props = {
   profile: any;
@@ -31,7 +34,23 @@ export default function DashboardClient({
   schedules
 }: Props) {
 
-  const [activeTab, setActiveTab] = useState<"overview" | "prayers" | "board" | "events">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "prayers" | "board" | "events" | "contact">("overview");
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // We need client-side supabase for the RPC call
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  useEffect(() => {
+    checkUnread();
+  }, []);
+
+  const checkUnread = async () => {
+    const { data } = await supabase.rpc('get_unread_count', { user_uuid: profile.id });
+    setUnreadCount(data || 0);
+  };
 
   return (
     // הוספתי pb-24 כדי שהתפריט התחתון בנייד לא יסתיר את התוכן
@@ -102,6 +121,13 @@ export default function DashboardClient({
             icon={<Calendar size={18} />}
             label="אירועים"
           />
+          <TabButton
+            active={activeTab === "contact"}
+            onClick={() => setActiveTab("contact")}
+            icon={<MessageSquare size={18} />}
+            label="פניות"
+            badge={unreadCount > 0 ? unreadCount : undefined}
+          />
         </div>
       </div>
 
@@ -111,6 +137,22 @@ export default function DashboardClient({
         {/* --- Tab 1: Overview --- */}
         {activeTab === "overview" && (
           <div className="space-y-6">
+
+            {/* התראות פניות */}
+            {unreadCount > 0 && (
+              <div onClick={() => setActiveTab("contact")} className="bg-blue-600 rounded-3xl p-5 shadow-lg shadow-blue-200 text-white flex items-center justify-between cursor-pointer active:scale-[0.98] transition">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+                    <MessageSquare size={24} className="text-white fill-current" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg">יש לך {unreadCount} הודעות חדשות</div>
+                    <div className="text-blue-100 text-sm">לחץ כאן לצפייה והמשך התכתבות</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* זמנים קרובים */}
             <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
               <div className="flex justify-between items-center mb-4">
@@ -210,7 +252,7 @@ export default function DashboardClient({
           <div className="space-y-6">
             {/* קהילה */}
             <div className="space-y-3">
-              <h3 className="font-bold text-slate-500 text-xs uppercase tracking-wider">אירועי קהילה</h3>
+              <h3 className="font-bold text-slate-500 text-xs uppercase tracking-wider">אירועי בית הכנסת</h3>
               {communityEvents.map(e => <EventCard key={e.id} event={e} type="community" />)}
               {communityEvents.length === 0 && <p className="text-sm text-slate-400">אין אירועים</p>}
             </div>
@@ -224,12 +266,16 @@ export default function DashboardClient({
           </div>
         )}
 
+        {/* --- Tab 5: Contact --- */}
+        {activeTab === "contact" && (
+          <ContactTab userId={profile.id} />
+        )}
       </div>
     </div>
   );
 }
 
-function TabButton({ active, onClick, icon, label }: any) {
+function TabButton({ active, onClick, icon, label, badge }: any) {
   return (
     <button
       onClick={onClick}
@@ -238,6 +284,9 @@ function TabButton({ active, onClick, icon, label }: any) {
         : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
         }`}
     >
+      {badge && (
+        <span className="absolute top-2 right-4 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white z-20"></span>
+      )}
       <span className="relative z-10">{icon}</span>
       <span className="relative z-10">{label}</span>
     </button>

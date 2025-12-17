@@ -41,7 +41,7 @@ export default function SignInPage() {
 
           <p className="text-blue-100 text-center mb-8 text-sm flex items-center justify-center gap-1.5 opacity-80">
             <Sparkles size={14} className="text-amber-300" />
-            מערכת ניהול קהילה חכמה
+            מערכת ניהול - בית הכנסת מעון קודשך, שכונת כרמים
           </p>
 
           <button
