@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Home, Users, LogOut, Calendar, ShieldAlert } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; 
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 
@@ -27,7 +27,7 @@ export default function Sidebar() {
           .select("is_gabbai")
           .eq("id", user.id)
           .single();
-        
+
         if (data?.is_gabbai) {
           setIsGabbai(true);
         }
@@ -44,17 +44,17 @@ export default function Sidebar() {
 
   return (
     <nav className="flex flex-col h-full bg-white text-slate-600 font-sans shadow-sm">
-      
+
       {/* אזור הלוגו */}
       <div className="p-6 border-b border-slate-100 flex flex-col items-center text-center">
         <div className="relative w-20 h-20 mb-3">
-           <Image 
-             src="/logo.png" 
-             alt="לוגו מעון קודשך" 
-             fill 
-             className="object-contain"
-             priority
-           />
+          <Image
+            src="/logo.png"
+            alt="לוגו מעון קודשך"
+            fill
+            className="object-contain"
+            priority
+          />
         </div>
         <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
           מעון קודשך
@@ -66,43 +66,43 @@ export default function Sidebar() {
 
       {/* תפריט ניווט */}
       <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
-        
-        <SidebarItem 
-          icon={<Home size={20} />} 
-          label="דף הבית" 
-          href="/dashboard" 
-          active={pathname === "/dashboard"} 
-        />
-        
-        <SidebarItem 
-          icon={<Users size={20} />} 
-          label="ניהול משפחה" 
-          href="/dashboard/family" 
-          active={pathname === "/dashboard/family"} 
+
+        <SidebarItem
+          icon={<Home size={20} />}
+          label="דף הבית"
+          href="/dashboard"
+          active={pathname === "/dashboard"}
         />
 
-        <SidebarItem 
-          icon={<Calendar size={20} />} 
-          label="אירועים אישיים" 
-          href="/dashboard/events" 
-          active={pathname === "/dashboard/events"} 
+        <SidebarItem
+          icon={<Users size={20} />}
+          label="ניהול משפחה"
+          href="/dashboard/family"
+          active={pathname === "/dashboard/family"}
+        />
+
+        <SidebarItem
+          icon={<Calendar size={20} />}
+          label="אירועים אישיים"
+          href="/dashboard/events"
+          active={pathname === "/dashboard/events"}
         />
 
         {/* תצוגה מותנית לגבאי בלבד */}
         {isGabbai && (
           <>
             <div className="my-3 border-t border-slate-100 mx-2"></div>
-            
+
             <div className="px-3 text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">
               ניהול
             </div>
 
-            <SidebarItem 
-              icon={<ShieldAlert size={20} />} 
-              label="אזור גבאי" 
-              href="/gabbai" 
+            <SidebarItem
+              icon={<ShieldAlert size={20} />}
+              label="אזור גבאי"
+              href="/gabbai"
               active={pathname.startsWith("/gabbai")}
-              special // עיצוב מיוחד לגבאי
+              special
             />
           </>
         )}
@@ -111,11 +111,11 @@ export default function Sidebar() {
 
       {/* כפתור יציאה */}
       <div className="p-4 border-t border-slate-100">
-        <SidebarItem 
-          icon={<LogOut size={20} />} 
-          label="התנתק מהמערכת" 
+        <SidebarItem
+          icon={<LogOut size={20} />}
+          label="התנתק מהמערכת"
           onClick={handleLogout}
-          danger 
+          danger
         />
       </div>
     </nav>
@@ -124,7 +124,7 @@ export default function Sidebar() {
 
 // קומפוננטת עזר
 function SidebarItem({ icon, label, href, onClick, active = false, danger = false, special = false }: any) {
-  
+
   // לוגיקה לצבעים
   let activeClass = "";
   let inactiveClass = "";

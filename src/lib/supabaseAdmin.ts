@@ -1,7 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseServiceKey) {
+  // We can't use the admin client without the key
+  // We'll throw a friendly error so the user knows what to do
+  throw new Error(
+    "Missing SUPABASE_SERVICE_ROLE_KEY environment variable. " +
+    "Please add it to your .env.local file from your Supabase Dashboard > Project Settings > API."
+  );
+}
+
 export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // ← חשוב!
+  supabaseUrl,
+  supabaseServiceKey,
   { auth: { persistSession: false } }
 );

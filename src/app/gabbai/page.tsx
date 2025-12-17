@@ -2,11 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { 
-  ShieldCheck, 
-  MessageCircle, 
-  FileText, 
-  Users, 
+import {
+  ShieldCheck,
+  MessageCircle,
+  FileText,
+  Users,
   ChevronLeft,
   Bell
 } from "lucide-react";
@@ -52,7 +52,7 @@ export default async function GabbaiDashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 pb-24 font-sans">
-      
+
       {/* Header */}
       <header className="mb-10">
         <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
@@ -69,14 +69,14 @@ export default async function GabbaiDashboardPage() {
       </header>
 
       {/* Grid Menu */}
-      <div className="grid md:grid-cols-3 gap-6">
-        
+      <div className="grid md:grid-cols-2 gap-6">
+
         {/* 1. אישורי משתמשים */}
         <Link href="/gabbai/approvals" className="group relative bg-white border border-slate-200 hover:border-blue-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
           <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-blue-50 transition-colors">
             <Users size={24} className="text-slate-600 group-hover:text-blue-600" />
           </div>
-          
+
           <div className="mt-12">
             <h3 className="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
               אישורי חברים
@@ -100,12 +100,33 @@ export default async function GabbaiDashboardPage() {
           )}
         </Link>
 
-        {/* 2. ניהול תוכן */}
+        {/* 2. ניהול משתמשים - החדש */}
+        <Link href="/gabbai/users" className="group relative bg-white border border-slate-200 hover:border-purple-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-purple-50 transition-colors">
+            <Users size={24} className="text-slate-600 group-hover:text-purple-600" />
+          </div>
+
+          <div className="mt-12">
+            <h3 className="text-xl font-bold text-slate-800 group-hover:text-purple-700 transition-colors">
+              ניהול משתמשים
+            </h3>
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+              צפייה בכל חברי הקהילה, עריכת פרטים, שינוי הרשאות ומחיקת משתמשים.
+            </p>
+          </div>
+
+          <div className="mt-6 flex items-center gap-1 text-slate-400 text-sm group-hover:translate-x-[-4px] transition-transform">
+            <span>לניהול</span>
+            <ChevronLeft size={16} />
+          </div>
+        </Link>
+
+        {/* 3. ניהול תוכן */}
         <Link href="/gabbai/content" className="group relative bg-white border border-slate-200 hover:border-indigo-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
           <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-indigo-50 transition-colors">
             <FileText size={24} className="text-slate-600 group-hover:text-indigo-600" />
           </div>
-          
+
           <div className="mt-12">
             <h3 className="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">
               ניהול תוכן וזמנים
@@ -114,19 +135,19 @@ export default async function GabbaiDashboardPage() {
               עריכת זמני תפילות, הוספת הודעות ללוח המודעות וניהול אירועי קהילה.
             </p>
           </div>
-          
+
           <div className="mt-6 flex items-center gap-1 text-slate-400 text-sm group-hover:translate-x-[-4px] transition-transform">
             <span>לניהול</span>
             <ChevronLeft size={16} />
           </div>
         </Link>
 
-        {/* 3. מחולל הודעות */}
+        {/* 4. מחולל הודעות */}
         <Link href="/gabbai/message-builder" className="group relative bg-white border border-slate-200 hover:border-green-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
           <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-green-50 transition-colors">
             <MessageCircle size={24} className="text-slate-600 group-hover:text-green-600" />
           </div>
-          
+
           <div className="mt-12">
             <h3 className="text-xl font-bold text-slate-800 group-hover:text-green-700 transition-colors">
               שליחה לווצאפ
@@ -141,7 +162,6 @@ export default async function GabbaiDashboardPage() {
             <ChevronLeft size={16} />
           </div>
         </Link>
-
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import GabbaiTabs from "./GabbaiTabs";
+import { ArrowRight } from "lucide-react";
 
 export default async function GabbaiContentPage() {
   const cookieStore = await cookies();
@@ -46,7 +47,14 @@ export default async function GabbaiContentPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 pb-32 font-sans">
-      
+
+      <div className="mb-6">
+        <a href="/gabbai" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">
+          <ArrowRight size={16} className="ml-1" />
+          חזרה לדשבורד
+        </a>
+      </div>
+
       {/* כותרת הדף */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

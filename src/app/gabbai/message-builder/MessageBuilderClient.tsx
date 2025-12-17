@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buildWhatsAppText, MessageSourceType } from "@/lib/whatsappTemplates";
 import { getCurrentHebrewInfo } from "../../../lib/hebrewUtils";
+import { ArrowRight } from "lucide-react";
 
 
 type Props = {
@@ -93,6 +94,13 @@ export default function MessageBuilderClient({
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
+      <div className="mb-6">
+        <a href="/gabbai" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">
+          <ArrowRight size={16} className="ml-1" />
+          חזרה לדשבורד
+        </a>
+      </div>
+
       <h1 className="text-3xl font-bold text-slate-800 mb-6">
         בניית הודעה לקהילה
       </h1>
@@ -107,11 +115,10 @@ export default function MessageBuilderClient({
           <button
             key={t.id}
             onClick={() => setSource(t.id as MessageSourceType)}
-            className={`flex-1 py-3 rounded-xl font-bold ${
-              source === t.id
-                ? "bg-white shadow text-green-700"
-                : "text-slate-500"
-            }`}
+            className={`flex-1 py-3 rounded-xl font-bold ${source === t.id
+              ? "bg-white shadow text-green-700"
+              : "text-slate-500"
+              }`}
           >
             {t.label}
           </button>
@@ -162,7 +169,7 @@ export default function MessageBuilderClient({
                   onClick={() =>
                     addBlock(
                       buildWhatsAppText(source, it)?.trim() ||
-                        "⚠️ לא ניתן לייצר הודעה אוטומטית."
+                      "⚠️ לא ניתן לייצר הודעה אוטומטית."
                     )
                   }
                   className="w-full text-right p-3 rounded-xl border hover:bg-green-50 hover:border-green-400"
