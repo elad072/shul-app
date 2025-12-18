@@ -12,8 +12,10 @@ import {
   Settings,
   UserCog,
   MessageSquare,
-  Book
+  Book,
+  LogOut
 } from "lucide-react";
+import LogoutButton from "@/app/components/LogoutButton";
 
 export default async function GabbaiDashboardPage() {
   const cookieStore = await cookies();
@@ -61,18 +63,24 @@ export default async function GabbaiDashboardPage() {
     <div className="max-w-6xl mx-auto px-4 py-8 pb-24 font-sans">
 
       {/* Header */}
-      <header className="mb-10">
-        <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
-          <Link href="/dashboard" className="hover:text-blue-600">דשבורד</Link>
-          <span>/</span>
-          <span>ניהול גבאי</span>
+      <header className="mb-10 flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
+            <Link href="/dashboard" className="hover:text-blue-600">דשבורד</Link>
+            <span>/</span>
+            <span>ניהול גבאי</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-800">
+            שלום, {profile.first_name} 👋
+          </h1>
+          <p className="text-slate-500 mt-1">
+            מרכז השליטה וניהול בית הכנסת
+          </p>
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-800">
-          שלום, {profile.first_name} 👋
-        </h1>
-        <p className="text-slate-500 mt-1">
-          מרכז השליטה וניהול בית הכנסת
-        </p>
+
+        <div className="lg:hidden">
+          <LogoutButton variant="outline" className="rounded-2xl border-slate-200 text-slate-500 hover:text-red-500 hover:bg-red-50" />
+        </div>
       </header>
 
       {/* Grid Menu */}

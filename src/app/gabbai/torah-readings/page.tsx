@@ -18,6 +18,7 @@ export default function GabbaiTorahReadingsPage() {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [filterStatus, setFilterStatus] = useState<"all" | "available" | "assigned">("all");
     const [selectedReading, setSelectedReading] = useState<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -76,17 +77,23 @@ export default function GabbaiTorahReadingsPage() {
 
     const filteredReadings = readings.filter(reading => {
         const search = searchTerm.trim();
-        if (!search) return true;
-
         const normalizedSearch = normalize(search);
         const normalizedParasha = normalize(reading.parashaNameHebrew);
 
-        return (
+        // Search filter
+        const matchesSearch = !search ||
             normalizedParasha.includes(normalizedSearch) ||
             reading.parashaNameHebrew.includes(search) ||
             reading.hebrewDate.includes(search) ||
-            (reading.assignment?.assigned_name || "").includes(search)
-        );
+            (reading.assignment?.assigned_name || "").includes(search);
+
+        // Status filter
+        const matchesStatus =
+            filterStatus === "all" ||
+            (filterStatus === "available" && !reading.assignment) ||
+            (filterStatus === "assigned" && reading.assignment);
+
+        return matchesSearch && matchesStatus;
     });
 
     return (
@@ -109,17 +116,39 @@ export default function GabbaiTorahReadingsPage() {
                 </div>
             </div>
 
-            {/* Search */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-                <div className="relative">
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="חיפוש לפי פרשה, תאריך או שם..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-4 pr-10 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                    />
+            {/* Filters */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="relative">
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                        <input
+                            type="text"
+                            placeholder="חיפוש לפי פרשה, תאריך או שם..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-4 pr-10 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
+                        />
+                    </div>
+                    <div className="relative">
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            <Search size={20} className="hidden" /> {/* Placeholder for alignment */}
+                            <span className="text-xs font-bold bg-slate-100 px-2 py-1 rounded-md">סטטוס:</span>
+                        </span>
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value as any)}
+                            className="w-full pl-4 pr-16 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none appearance-none bg-white font-medium"
+                        >
+                            <option value="all">כל הפרשיות</option>
+                            <option value="available">פנוי לשיבוץ</option>
+                            <option value="assigned">משובץ</option>
+                        </select>
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -93,13 +93,11 @@ export default function TorahReadingsPage() {
 
     const filteredReadings = readings.filter(reading => {
         const search = searchTerm.trim();
-        if (!search) return filterStatus === "all" || (filterStatus === "available" && !reading.assignment) || (filterStatus === "assigned" && reading.assignment);
-
         const normalizedSearch = normalize(search);
         const normalizedParasha = normalize(reading.parashaNameHebrew);
 
         // Search filter - improved for Hebrew
-        const matchesSearch =
+        const matchesSearch = !search ||
             normalizedParasha.includes(normalizedSearch) ||
             reading.parashaNameHebrew.includes(search) ||
             reading.hebrewDate.includes(search) ||

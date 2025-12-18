@@ -81,101 +81,112 @@ export function MobileTabs() {
   const isActive = (path: string) => pathname === path || pathname?.startsWith(`${path}/`);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 pb-safe lg:hidden z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
-      <div className="flex justify-between items-end">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-2 py-2 pb-safe lg:hidden z-50 shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
+      <div className="grid grid-cols-5 items-center justify-items-center">
+        {/* Item 1: Home */}
+        <Tab
+          icon={<Home size={22} />}
+          label="בית"
+          href="/dashboard"
+          active={pathname === "/dashboard"}
+        />
 
-        {/* צד ימין */}
-        <div className="flex gap-1 w-full justify-start">
-          <Tab
-            icon={<Home size={22} />}
-            label="בית"
-            href="/dashboard"
-            active={pathname === "/dashboard"}
-          />
+        {/* Item 2: Events */}
+        <Tab
+          icon={<Calendar size={22} />}
+          label="אירועים"
+          href="/dashboard/events"
+          active={isActive("/dashboard/events")}
+        />
 
-          <Tab
-            icon={<Calendar size={22} />}
-            label="אירועים"
-            href="/dashboard/events"
-            active={isActive("/dashboard/events")}
-          />
-
-          <Tab
-            icon={<Book size={22} />}
-            label="קריאה"
-            href="/dashboard/torah-readings"
-            active={isActive("/dashboard/torah-readings")}
-          />
-        </div>
-
-        {/* כפתור אמצעי - משפחה */}
-        <div className="relative -top-6 mx-1 shrink-0">
-          <Link href="/dashboard/family">
-            <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-lg border-4 border-slate-50 transition-transform active:scale-95 ${isActive("/dashboard/family")
+        {/* Item 3: Center (Family) - Special prominent style */}
+        <div className="relative -top-3">
+          <Link href="/dashboard/family" className="flex flex-col items-center gap-1 group">
+            <div className={`p-3.5 rounded-2xl shadow-lg border-2 border-white transition-all active:scale-90 ${isActive("/dashboard/family")
               ? "bg-blue-600 text-white"
               : "bg-slate-900 text-white"
               }`}>
               <Users size={24} />
             </div>
+            <span className={`text-[10px] font-bold mt-1.5 transition-colors ${isActive("/dashboard/family") ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"
+              }`}>משפחה</span>
           </Link>
         </div>
 
-        {/* צד שמאל */}
-        <div className="flex gap-1 w-full justify-end">
+        {/* Item 4: Torah Reading */}
+        <Tab
+          icon={<Book size={22} />}
+          label="קריאה"
+          href="/dashboard/torah-readings"
+          active={isActive("/dashboard/torah-readings")}
+        />
 
-          {/* כפתור גבאי - מופיע רק אם יש הרשאה */}
-          {isGabbai && (
-            <div className="flex gap-1">
-              <Tab
-                icon={<Book size={22} />}
-                label="ניהול"
-                href="/gabbai/torah-readings"
-                active={isActive("/gabbai/torah-readings")}
-                color="text-amber-600"
-              />
-              <Tab
-                icon={<ShieldAlert size={22} />}
-                label="גבאי"
-                href="/gabbai"
-                active={isActive("/gabbai") && !isActive("/gabbai/torah-readings")}
-                color="text-amber-600"
-                badge={gabbaiUnread}
-              />
-            </div>
-          )}
-
-          <button
+        {/* Item 5: Management (Gabbai) or Profile */}
+        {isGabbai ? (
+          <Tab
+            icon={<ShieldAlert size={22} />}
+            label="גבאי"
+            href="/gabbai"
+            active={isActive("/gabbai")}
+            color="text-amber-600"
+            badge={gabbaiUnread}
+          />
+        ) : (
+          <Tab
+            icon={<LogOut size={22} />}
+            label="יציאה"
             onClick={handleLogout}
-            className="flex flex-col items-center gap-1 w-14 py-1 text-slate-400 hover:text-red-500 transition-colors"
-          >
-            <LogOut size={22} />
-            <span className="text-[10px] font-medium">יציאה</span>
-          </button>
-        </div>
-
+            active={false}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function Tab({ icon, label, href, active, color, badge }: { icon: React.ReactNode, label: string, href: string, active: boolean, color?: string, badge?: number }) {
+function Tab({ icon, label, href, active, color, badge, onClick }: {
+  icon: React.ReactNode,
+  label: string,
+  href?: string,
+  active: boolean,
+  color?: string,
+  badge?: number,
+  onClick?: () => void
+}) {
   const baseColor = color || (active ? "text-blue-600" : "text-slate-400");
   const activeClass = active ? "font-bold" : "";
 
-  return (
-    <Link
-      href={href}
-      className={`flex flex-col items-center gap-1 w-14 py-1 transition-colors relative ${baseColor} ${activeClass}`}
-    >
+  const content = (
+    <>
       <div className="relative">
         {icon}
         {badge && badge > 0 ? (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+          <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white px-0.5">
             {badge}
           </span>
         ) : null}
       </div>
-      <span className="text-[10px] font-medium">{label}</span>
+      <span className="text-[10px] font-medium leading-tight">{label}</span>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        className={`flex flex-col items-center gap-1 w-full py-1 transition-all active:scale-95 text-slate-400 hover:text-slate-600`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      href={href || "#"}
+      className={`flex flex-col items-center gap-1 w-full py-1 transition-all active:scale-95 relative ${baseColor} ${activeClass}`}
+    >
+      {content}
     </Link>
   );
 }

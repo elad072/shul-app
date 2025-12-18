@@ -12,9 +12,11 @@ import {
   Pin,
   User,
   BookOpen,
-  MessageSquare
+  MessageSquare,
+  LogOut
 } from "lucide-react";
 import ContactTab from "./ContactTab";
+import LogoutButton from "@/app/components/LogoutButton";
 
 type Props = {
   profile: any;
@@ -78,6 +80,10 @@ export default function DashboardClient({
                   <Sparkles size={14} className="text-amber-300" /> ברוכים הבאים
                 </p>
               </div>
+            </div>
+
+            <div className="md:hidden">
+              <LogoutButton variant="outline" className="rounded-2xl border-white/20 bg-white/10 text-white hover:bg-white/20" />
             </div>
           </div>
 
