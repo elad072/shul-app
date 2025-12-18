@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Users, UserCog, Calendar, ShieldCheck, LogOut, MessageSquare, PenTool, CheckSquare, Home, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Users, UserCog, Calendar, ShieldCheck, LogOut, MessageSquare, PenTool, CheckSquare, Home, ShieldAlert, Book } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -104,6 +104,13 @@ export default function Sidebar() {
           active={pathname === "/dashboard/events"}
         />
 
+        <SidebarItem
+          icon={<Book size={20} />}
+          label="קריאת התורה"
+          href="/dashboard/torah-readings"
+          active={pathname === "/dashboard/torah-readings"}
+        />
+
 
         {/* תצוגה מותנית לגבאי בלבד */}
         {isGabbai && (
@@ -126,6 +133,13 @@ export default function Sidebar() {
               label="הגדרות אפליקציה"
               href="/gabbai/settings"
               active={pathname === "/gabbai/settings"}
+              special
+            />
+            <SidebarItem
+              icon={<Book size={20} />}
+              label="ניהול קריאת התורה"
+              href="/gabbai/torah-readings"
+              active={pathname === "/gabbai/torah-readings"}
               special
             />
             <SidebarItem

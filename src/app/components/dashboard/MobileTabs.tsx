@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Users, LogOut, Calendar, ShieldAlert } from "lucide-react";
+import { Home, Users, LogOut, Calendar, ShieldAlert, Book } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useEffect, useState } from "react";
 
@@ -98,6 +98,13 @@ export function MobileTabs() {
             label="אירועים"
             href="/dashboard/events"
             active={isActive("/dashboard/events")}
+          />
+
+          <Tab
+            icon={<Book size={22} />}
+            label="קריאה"
+            href="/dashboard/torah-readings"
+            active={isActive("/dashboard/torah-readings")}
           />
         </div>
 
