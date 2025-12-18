@@ -248,6 +248,27 @@ export default async function GabbaiDashboardPage() {
             <ChevronLeft size={16} />
           </div>
         </Link>
+
+        {/* 7. בדיקת WhatsApp */}
+        <Link href="/gabbai/whatsapp-test" className="group relative bg-white border border-slate-200 hover:border-green-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-green-50 transition-colors">
+            <MessageCircle size={24} className="text-slate-600 group-hover:text-green-600" />
+          </div>
+
+          <div className="mt-12">
+            <h3 className="text-xl font-bold text-slate-800 group-hover:text-green-700 transition-colors">
+              בדיקת WhatsApp
+            </h3>
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+              בדיקת חיבור ל-WhatsApp Cloud API ושליחת הודעת ניסיון.
+            </p>
+          </div>
+
+          <div className="mt-6 flex items-center gap-1 text-slate-400 text-sm group-hover:translate-x-[-4px] transition-transform">
+            <span>לבדיקה</span>
+            <ChevronLeft size={16} />
+          </div>
+        </Link>
       </div>
     </div>
   );
