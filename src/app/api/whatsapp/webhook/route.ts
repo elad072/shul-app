@@ -2,68 +2,95 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 /**
- * WhatsApp Webhook Endpoint
+ * WhatsApp Webhook Endpoint - AI Powered (GPT-4o-mini)
  */
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "shul_app_webhook_verify_token";
 
-const DAYS: Record<string, number | null> = {
-    "ראשון": 0,
-    "שני": 1,
-    "שלישי": 2,
-    "רביעי": 3,
-    "חמישי": 4,
-    "שישי": 5,
-    "שבת": 6,
-    "יום חול": null,
-};
-
-async function getPrayerTimes(dayKeyword: string) {
+async function getSynagogueContext() {
     const supabase = getSupabaseAdmin();
-    const dayOfWeek = DAYS[dayKeyword];
 
-    let query = supabase.from("schedules").select("title, time_of_day");
+    // 1. Fetch Schedules
+    const { data: schedules } = await supabase
+        .from("schedules")
+        .select("title, time_of_day, day_of_week")
+        .order("time_of_day");
 
-    if (dayOfWeek === null) {
-        query = query.is("day_of_week", null);
-    } else if (dayOfWeek !== undefined) {
-        query = query.eq("day_of_week", dayOfWeek);
-    } else {
-        return null;
-    }
+    // 2. Fetch Latest Announcements
+    const { data: announcements } = await supabase
+        .from("announcements")
+        .select("title, content")
+        .order("created_at", { ascending: false })
+        .limit(5);
 
-    const { data, error } = await query.order("time_of_day");
+    // 3. Fetch Upcoming Events
+    const { data: events } = await supabase
+        .from("community_events")
+        .select("title, location, start_time")
+        .order("start_time", { ascending: true })
+        .limit(5);
 
-    if (error || !data || data.length === 0) {
-        return `לא נמצאו זמנים ל-${dayKeyword}.`;
-    }
+    const daysHe = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 
-    const lines = data.map(s => `🕒 *${s.title}* – ${s.time_of_day.slice(0, 5)}`);
-    return `🕍 *זמני תפילות – ${dayKeyword}*\n\n${lines.join("\n")}`;
+    const context = `
+בית הכנסת: מעון קודשך.
+
+זמני תפילות:
+${schedules?.map(s => `- ${s.title}: ${s.time_of_day.slice(0, 5)} (${s.day_of_week !== null ? daysHe[s.day_of_week] : 'יום חול/קבוע'})`).join("\n")}
+
+הודעות אחרונות:
+${announcements?.map(a => `- ${a.title}: ${a.content}`).join("\n")}
+
+אירועים קרובים:
+${events?.map(e => `- ${e.title} ב-${e.location} בתאריך ${e.start_time}`).join("\n")}
+  `.trim();
+
+    return context;
 }
 
-async function getBotResponse(rawText: string, from: string, userName?: string) {
-    const text = rawText.trim().toLowerCase();
-    const supabase = getSupabaseAdmin();
+async function getAIResponse(userMessage: string, userName?: string) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) return "שגיאת מערכת: מפתח AI חסר.";
 
-    // 1. Check for specific day queries
-    for (const day of Object.keys(DAYS)) {
-        if (text.includes(day)) {
-            const times = await getPrayerTimes(day);
-            if (times) return times;
-        }
+    const context = await getSynagogueContext();
+    const systemPrompt = `
+אתה העוזר הדיגיטלי של בית הכנסת "מעון קודשך". 
+תפקידך לענות לחברי הקהילה על שאלותיהם בצורה אדיבה, חמה ומכבדת בעברית.
+השתמש במידע הבא כבסיס הבלעדי לתשובות שלך:
+${context}
+
+הנחיות:
+1. אם פנו אליך בשם ${userName || 'משתמש'}, פנה אליו חזרה בנימוס.
+2. אם שואלים על זמנים, פרט אותם בצורה ברורה.
+3. אם שואלים על הודעות או אירועים, הצג את המעודכנים ביותר.
+4. אם שואלים על משהו שלא מופיע במידע לעיל, ענה בנימוס שאינך יודע והצע לפנות לגבאי.
+5. שמור על תשובות קצרות וקולעות שמתאימות ל-WhatsApp.
+  `.trim();
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userMessage }
+                ],
+                max_tokens: 500,
+                temperature: 0.7,
+            }),
+        });
+
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || "מצטער, לא הצלחתי לעבד את הבקשה.";
+    } catch (error) {
+        console.error("AI Error:", error);
+        return "מצטער, חלה שגיאה בחיבור לבינה המלאכותית.";
     }
-
-    // 2. Default: Fetch welcome message from bot_settings or fallback
-    const { data: setting } = await supabase
-        .from("bot_settings")
-        .select("value")
-        .eq("key", "welcome_message")
-        .single();
-
-    const welcome = setting?.value || `שלום ${userName || ''}! ברוך הבא לבית הכנסת.\nמה תרצה לדעת?\nאפשר לשאול על:\n📅 זמנים של שישי\n🕯 זמנים של שבת\n🗓 זמנים של יום חול`;
-
-    return welcome;
 }
 
 export async function GET(req: Request) {
@@ -103,7 +130,7 @@ export async function POST(req: Request) {
                     .or(`phone.eq.${from},phone.eq.+${from},phone.eq.0${from.slice(-9)}`)
                     .single();
 
-                const responseText = await getBotResponse(text, from, profile?.first_name);
+                const responseText = await getAIResponse(text, profile?.first_name);
 
                 // Reply
                 const phoneId = process.env.WHATSAPP_PHONE_ID;
@@ -130,6 +157,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
     } catch (error) {
         console.error("Webhook Error:", error);
-        return NextResponse.json({ ok: true }); // Always return 200 to WhatsApp to avoid retries
+        return NextResponse.json({ ok: true });
     }
 }
