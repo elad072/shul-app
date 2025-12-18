@@ -1,5 +1,8 @@
 "use server";
 
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { revalidatePath } from "next/cache";
+
 export async function sendWhatsAppTestAction(userName: string) {
     const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_ID;
     const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_API_TOKEN;
@@ -46,4 +49,27 @@ export async function sendWhatsAppTestAction(userName: string) {
     } catch (error: any) {
         return { success: false, error: error.message };
     }
+}
+
+export async function getBotSettings() {
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+        .from("bot_settings")
+        .select("value")
+        .eq("key", "welcome_message")
+        .single();
+
+    return { data, error };
+}
+
+export async function updateBotSettings(welcomeMessage: string) {
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase
+        .from("bot_settings")
+        .upsert({ key: "welcome_message", value: welcomeMessage, updated_at: new Date().toISOString() });
+
+    if (error) return { success: false, error: error.message };
+
+    revalidatePath("/gabbai/whatsapp-test");
+    return { success: true };
 }

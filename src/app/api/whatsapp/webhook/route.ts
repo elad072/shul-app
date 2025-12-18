@@ -3,11 +3,68 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 /**
  * WhatsApp Webhook Endpoint
- * GET: Verification
- * POST: Handle incoming messages
  */
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "shul_app_webhook_verify_token";
+
+const DAYS: Record<string, number | null> = {
+    "ראשון": 0,
+    "שני": 1,
+    "שלישי": 2,
+    "רביעי": 3,
+    "חמישי": 4,
+    "שישי": 5,
+    "שבת": 6,
+    "יום חול": null,
+};
+
+async function getPrayerTimes(dayKeyword: string) {
+    const supabase = getSupabaseAdmin();
+    const dayOfWeek = DAYS[dayKeyword];
+
+    let query = supabase.from("schedules").select("title, time_of_day");
+
+    if (dayOfWeek === null) {
+        query = query.is("day_of_week", null);
+    } else if (dayOfWeek !== undefined) {
+        query = query.eq("day_of_week", dayOfWeek);
+    } else {
+        return null;
+    }
+
+    const { data, error } = await query.order("time_of_day");
+
+    if (error || !data || data.length === 0) {
+        return `לא נמצאו זמנים ל-${dayKeyword}.`;
+    }
+
+    const lines = data.map(s => `🕒 *${s.title}* – ${s.time_of_day.slice(0, 5)}`);
+    return `🕍 *זמני תפילות – ${dayKeyword}*\n\n${lines.join("\n")}`;
+}
+
+async function getBotResponse(rawText: string, from: string, userName?: string) {
+    const text = rawText.trim().toLowerCase();
+    const supabase = getSupabaseAdmin();
+
+    // 1. Check for specific day queries
+    for (const day of Object.keys(DAYS)) {
+        if (text.includes(day)) {
+            const times = await getPrayerTimes(day);
+            if (times) return times;
+        }
+    }
+
+    // 2. Default: Fetch welcome message from bot_settings or fallback
+    const { data: setting } = await supabase
+        .from("bot_settings")
+        .select("value")
+        .eq("key", "welcome_message")
+        .single();
+
+    const welcome = setting?.value || `שלום ${userName || ''}! ברוך הבא לבית הכנסת.\nמה תרצה לדעת?\nאפשר לשאול על:\n📅 זמנים של שישי\n🕯 זמנים של שבת\n🗓 זמנים של יום חול`;
+
+    return welcome;
+}
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
@@ -17,7 +74,6 @@ export async function GET(req: Request) {
 
     if (mode && token) {
         if (mode === "subscribe" && token === VERIFY_TOKEN) {
-            console.log("WEBHOOK_VERIFIED");
             return new Response(challenge, { status: 200 });
         } else {
             return new Response("Forbidden", { status: 403 });
@@ -30,37 +86,26 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
 
-        // Check if it's a message event
         if (
             body.object === "whatsapp_business_account" &&
-            body.entry &&
-            body.entry[0].changes &&
-            body.entry[0].changes[0].value.messages &&
-            body.entry[0].changes[0].value.messages[0]
+            body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
         ) {
             const message = body.entry[0].changes[0].value.messages[0];
-            const from = message.from; // Sender's phone number
+            const from = message.from;
             const text = message.text?.body;
 
             if (text) {
-                console.log(`Received message from ${from}: ${text}`);
-
-                // 1. Identify User
+                // Identify User
                 const supabase = getSupabaseAdmin();
-                const { data: profile, error } = await supabase
+                const { data: profile } = await supabase
                     .from("profiles")
-                    .select("first_name, last_name")
-                    .or(`phone.eq.${from},phone.eq.+${from},phone.eq.0${from.slice(-9)}`) // Try to match phone patterns
+                    .select("first_name")
+                    .or(`phone.eq.${from},phone.eq.+${from},phone.eq.0${from.slice(-9)}`)
                     .single();
 
-                let responseMessage = "";
-                if (profile) {
-                    responseMessage = `שלום ${profile.first_name} ${profile.last_name || ""}, אתה מחובר למערכת הגבאי!`;
-                } else {
-                    responseMessage = `שלום, המספר שלך (${from}) אינו מזוהה במערכת שלנו.`;
-                }
+                const responseText = await getBotResponse(text, from, profile?.first_name);
 
-                // 2. Reply via WhatsApp API
+                // Reply
                 const phoneId = process.env.WHATSAPP_PHONE_ID;
                 const accessToken = process.env.WHATSAPP_API_TOKEN;
 
@@ -75,11 +120,9 @@ export async function POST(req: Request) {
                             messaging_product: "whatsapp",
                             to: from,
                             type: "text",
-                            text: { body: responseMessage },
+                            text: { body: responseText },
                         }),
                     });
-                } else {
-                    console.error("Missing WhatsApp credentials in environment variables");
                 }
             }
         }
@@ -87,6 +130,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
     } catch (error) {
         console.error("Webhook Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ ok: true }); // Always return 200 to WhatsApp to avoid retries
     }
 }
