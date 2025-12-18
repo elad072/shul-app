@@ -11,7 +11,8 @@ import {
   Bell,
   Settings,
   UserCog,
-  MessageSquare
+  MessageSquare,
+  Book
 } from "lucide-react";
 
 export default async function GabbaiDashboardPage() {
@@ -169,14 +170,35 @@ export default async function GabbaiDashboardPage() {
           </div>
         </Link>
 
-        {/* 5. הודעות ופניות */}
-        <Link href="/gabbai/messages" className="group relative bg-white border border-slate-200 hover:border-amber-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
+        {/* 5. ניהול קריאות בתורה - החדש */}
+        <Link href="/gabbai/torah-readings" className="group relative bg-white border border-slate-200 hover:border-amber-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
           <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-amber-50 transition-colors">
-            <MessageSquare size={24} className="text-slate-600 group-hover:text-amber-600" />
+            <Book size={24} className="text-slate-600 group-hover:text-amber-600" />
           </div>
 
           <div className="mt-12">
             <h3 className="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">
+              ניהול קריאת התורה
+            </h3>
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+              ניהול שיבוצי קוראים, הוספת חברים חדשים ועדכון פרשיות השבוע.
+            </p>
+          </div>
+
+          <div className="mt-6 flex items-center gap-1 text-slate-400 text-sm group-hover:translate-x-[-4px] transition-transform">
+            <span>לניהול השיבוצים</span>
+            <ChevronLeft size={16} />
+          </div>
+        </Link>
+
+        {/* 6. הודעות ופניות */}
+        <Link href="/gabbai/messages" className="group relative bg-white border border-slate-200 hover:border-blue-300 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="absolute top-6 left-6 bg-slate-50 p-3 rounded-2xl group-hover:bg-blue-50 transition-colors">
+            <MessageSquare size={24} className="text-slate-600 group-hover:text-blue-600" />
+          </div>
+
+          <div className="mt-12">
+            <h3 className="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
               הודעות ופניות
             </h3>
             <p className="text-sm text-slate-500 mt-2 leading-relaxed">

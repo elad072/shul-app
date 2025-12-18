@@ -125,14 +125,23 @@ export function MobileTabs() {
 
           {/* כפתור גבאי - מופיע רק אם יש הרשאה */}
           {isGabbai && (
-            <Tab
-              icon={<ShieldAlert size={22} />}
-              label="גבאי"
-              href="/gabbai"
-              active={isActive("/gabbai")}
-              color="text-amber-600"
-              badge={gabbaiUnread}
-            />
+            <div className="flex gap-1">
+              <Tab
+                icon={<Book size={22} />}
+                label="ניהול"
+                href="/gabbai/torah-readings"
+                active={isActive("/gabbai/torah-readings")}
+                color="text-amber-600"
+              />
+              <Tab
+                icon={<ShieldAlert size={22} />}
+                label="גבאי"
+                href="/gabbai"
+                active={isActive("/gabbai") && !isActive("/gabbai/torah-readings")}
+                color="text-amber-600"
+                badge={gabbaiUnread}
+              />
+            </div>
           )}
 
           <button

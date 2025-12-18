@@ -123,7 +123,7 @@ export default function GabbaiTorahReadingsPage() {
                 </div>
             </div>
 
-            {/* Table */}
+            {/* Content Area */}
             {loading ? (
                 <div className="bg-white rounded-2xl p-6 animate-pulse">
                     <div className="space-y-4">
@@ -133,82 +133,140 @@ export default function GabbaiTorahReadingsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-right">
-                            <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                    <th className="px-6 py-4 text-sm font-semibold text-slate-600">תאריך</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-slate-600">פרשה</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-slate-600">בעל קריאה</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-slate-600">סטטוס</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-slate-600">פעולות</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {filteredReadings.map((reading, index) => (
-                                    <tr key={index} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm font-medium text-slate-900">
-                                                {new Date(reading.gregorianDate).toLocaleDateString('he-IL')}
-                                            </div>
-                                            <div className="text-xs text-slate-500">{reading.hebrewDate}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-slate-900">{reading.parashaNameHebrew}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {reading.assignment ? (
-                                                <div className="flex items-center gap-2">
-                                                    <User size={16} className="text-green-600" />
-                                                    <span className="font-medium text-slate-900">
-                                                        {reading.assignment.assigned_name}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-slate-400 text-sm">לא משובץ</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {reading.assignment ? (
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${reading.assignment.is_self_assigned
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : 'bg-green-100 text-green-800'
-                                                    }`}>
-                                                    {reading.assignment.is_self_assigned ? 'שיבוץ עצמי' : 'שובץ ע"י גבאי'}
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                                                    פנוי
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => openAssignModal(reading)}
-                                                    className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                                                    title={reading.assignment ? "עריכת שיבוץ" : "שיבוץ"}
-                                                >
-                                                    {reading.assignment ? <Edit2 size={18} /> : <Plus size={18} />}
-                                                </button>
-                                                {reading.assignment && (
-                                                    <button
-                                                        onClick={() => handleRemove(reading.assignment.id)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="מחיקת שיבוץ"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
+                <>
+                    {/* Desktop Table - Hidden on Mobile */}
+                    <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-right">
+                                <thead className="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th className="px-6 py-4 text-sm font-semibold text-slate-600">תאריך</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-slate-600">פרשה</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-slate-600">בעל קריאה</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-slate-600">סטטוס</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-slate-600">פעולות</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredReadings.map((reading, index) => (
+                                        <tr key={index} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm font-medium text-slate-900">
+                                                    {new Date(reading.gregorianDate).toLocaleDateString('he-IL')}
+                                                </div>
+                                                <div className="text-xs text-slate-500">{reading.hebrewDate}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-slate-900">{reading.parashaNameHebrew}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {reading.assignment ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <User size={16} className="text-green-600" />
+                                                        <span className="font-medium text-slate-900">
+                                                            {reading.assignment.assigned_name}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-slate-400 text-sm">לא משובץ</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {reading.assignment ? (
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${reading.assignment.is_self_assigned
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : 'bg-green-100 text-green-800'
+                                                        }`}>
+                                                        {reading.assignment.is_self_assigned ? 'שיבוץ עצמי' : 'שובץ ע"י גבאי'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                                        פנוי
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => openAssignModal(reading)}
+                                                        className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                        title={reading.assignment ? "עריכת שיבוץ" : "שיבוץ"}
+                                                    >
+                                                        {reading.assignment ? <Edit2 size={18} /> : <Plus size={18} />}
+                                                    </button>
+                                                    {reading.assignment && (
+                                                        <button
+                                                            onClick={() => handleRemove(reading.assignment.id)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            title="מחיקת שיבוץ"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+
+                    {/* Mobile Card View - Hidden on Desktop */}
+                    <div className="md:hidden space-y-4">
+                        {filteredReadings.map((reading, index) => (
+                            <div key={index} className={`bg-white rounded-2xl p-4 border shadow-sm transition-all ${reading.assignment ? 'border-green-100' : 'border-slate-100'
+                                }`}>
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <div className="text-xs text-slate-500">{reading.hebrewDate}</div>
+                                        <div className="font-bold text-slate-900">{reading.parashaNameHebrew}</div>
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="text-xs font-bold text-blue-600">
+                                            {new Date(reading.gregorianDate).toLocaleDateString('he-IL')}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                                    <div className="flex-1">
+                                        {reading.assignment ? (
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
+                                                    <User size={14} className="text-green-600" />
+                                                    {reading.assignment.assigned_name}
+                                                </div>
+                                                <div className="text-[10px] text-slate-400">
+                                                    {reading.assignment.is_self_assigned ? 'שיבוץ עצמי' : 'שובץ ע"י גבאי'}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-sm text-slate-400">פנוי לשיבוץ</div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => openAssignModal(reading)}
+                                            className="p-2.5 bg-amber-50 text-amber-600 rounded-xl active:scale-95 transition-all shadow-sm"
+                                        >
+                                            {reading.assignment ? <Edit2 size={18} /> : <Plus size={18} />}
+                                        </button>
+                                        {reading.assignment && (
+                                            <button
+                                                onClick={() => handleRemove(reading.assignment.id)}
+                                                className="p-2.5 bg-red-50 text-red-600 rounded-xl active:scale-95 transition-all shadow-sm"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
             )}
 
             {/* Assignment Modal */}
