@@ -4,6 +4,12 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export function getSupabaseAdmin() {
+  // Debug logging - remove after fixing
+  console.log('🔍 Checking SUPABASE_SERVICE_ROLE_KEY...');
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Key exists:', !!supabaseServiceKey);
+  console.log('Key preview:', supabaseServiceKey ? `${supabaseServiceKey.substring(0, 10)}...` : 'undefined');
+  
   if (!supabaseServiceKey) {
     throw new Error(
       "Missing SUPABASE_SERVICE_ROLE_KEY environment variable. " +
