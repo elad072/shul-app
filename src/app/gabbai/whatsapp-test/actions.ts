@@ -1,4 +1,4 @@
-"use strict";
+"use server";
 
 export async function sendWhatsAppTestAction(userName: string) {
     const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_ID;
